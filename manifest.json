@@ -1,8 +1,8 @@
 {
-	"id": "obsidian-plugin-template",
-	"name": "Obsidian plugin template",
+	"id": "favorites",
+	"name": "Favorites",
 	"minAppVersion": "0.15.0",
-	"description": "",
+	"description": "Store and manage a global favorites list of plugins and themes, keeping them accessible across all your vaults.",
 	"author": "4Source",
 	"authorUrl": "https://github.com/4Source",
 	"isDesktopOnly": false,
