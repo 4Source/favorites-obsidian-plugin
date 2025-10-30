@@ -38,6 +38,10 @@ const context = await esbuild.context({
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
 	outfile: "main.js",
+	define: {
+		'process.env.FAVORITE_PLUGINS_KEY': JSON.stringify(prod ? 'favorite-plugins' : 'dev-favorite-plugins'),
+		'process.env.FAVORITE_THEMES_KEY': JSON.stringify(prod ? 'favorite-themes' : 'dev-favorite-themes')
+	}
 });
 
 if (prod) {

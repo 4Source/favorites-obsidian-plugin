@@ -3,6 +3,8 @@ import { dedupe, around } from 'monkey-around';
 import { MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_MODAL_OPEN, MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS } from './constants';
 
 export default class FavoritesPlugin extends Plugin {
+	pluginsKey: string;
+	themesKey: string;
 	favoritePlugins?: string[];
 	favoriteThemes?: string[];
 	communityPluginModalPrototype?: CommunityModal;
@@ -15,6 +17,10 @@ export default class FavoritesPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
+
+		this.pluginsKey = process.env.FAVORITE_PLUGINS_KEY || "";
+		this.themesKey = process.env.FAVORITE_THEMES_KEY || "";
+		console.log(this.pluginsKey, this.themesKey)
 
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const plugin = this;
@@ -31,9 +37,9 @@ export default class FavoritesPlugin extends Plugin {
 							updateItems(oldMethod) {
 								return dedupe(MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, oldMethod, function () {
 									// Load the favorite plugins
-									plugin.favoritePlugins = JSON.parse(localStorage.getItem('favorite-plugins') || '[]');
+									plugin.favoritePlugins = JSON.parse(localStorage.getItem(this.pluginsKey) || '[]');
 
-									const result = oldMethod && oldMethod.apply(this, args);
+									const result = oldMethod && oldMethod.apply(this);
 
 									// Add to the favorite plugins a tag to visualize it for the user
 									if (plugin.favoritePlugins) {
@@ -57,7 +63,7 @@ export default class FavoritesPlugin extends Plugin {
 							showItem(oldMethod) {
 								return dedupe(MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, oldMethod, async function (...args: CommunityItem[]) {
 									// Load the favorite plugins
-									plugin.favoritePlugins = JSON.parse(localStorage.getItem('favorite-plugins') || '[]');
+									plugin.favoritePlugins = JSON.parse(localStorage.getItem(this.pluginsKey) || '[]');
 
 									return oldMethod && oldMethod.apply(this, args).then(async (r: void) => {
 										const infoEl = await this.detailsEl.getElementsByClassName('community-modal-info')[0];
@@ -106,9 +112,9 @@ export default class FavoritesPlugin extends Plugin {
 							updateItems(oldMethod) {
 								return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, oldMethod, function () {
 									// Load the favorite themes
-									plugin.favoriteThemes = JSON.parse(localStorage.getItem('favorite-themes') || '[]');
+									plugin.favoriteThemes = JSON.parse(localStorage.getItem(this.themesKey) || '[]');
 
-									const result = oldMethod && oldMethod.apply(this, args);
+									const result = oldMethod && oldMethod.apply(this);
 
 									// Ignore the default theme
 									if (this.selectedItemId === '') {
@@ -137,7 +143,7 @@ export default class FavoritesPlugin extends Plugin {
 							showItem(oldMethod) {
 								return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, oldMethod, async function (...args: CommunityItem[]) {
 									// Load the favorite themes
-									plugin.favoriteThemes = JSON.parse(localStorage.getItem('favorite-themes') || '[]');
+									plugin.favoriteThemes = JSON.parse(localStorage.getItem(this.themesKey) || '[]');
 
 									return oldMethod && oldMethod.apply(this, args).then(async (r: void) => {
 										// Ignore the default theme
@@ -214,19 +220,19 @@ export default class FavoritesPlugin extends Plugin {
 	async saveSettings() {
 		if (this.favoritePlugins) {
 			if (this.favoritePlugins.length > 0) {
-				localStorage.setItem('favorite-plugins', JSON.stringify(this.favoritePlugins));
+				localStorage.setItem(this.pluginsKey, JSON.stringify(this.favoritePlugins));
 			}
 			else {
-				localStorage.removeItem('favorite-plugins');
+				localStorage.removeItem(this.pluginsKey);
 			}
 		}
 
 		if (this.favoriteThemes) {
 			if (this.favoriteThemes.length > 0) {
-				localStorage.setItem('favorite-themes', JSON.stringify(this.favoriteThemes));
+				localStorage.setItem(this.themesKey, JSON.stringify(this.favoriteThemes));
 			}
 			else {
-				localStorage.removeItem('favorite-themes');
+				localStorage.removeItem(this.themesKey);
 			}
 		}
 	}
