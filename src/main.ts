@@ -1,44 +1,39 @@
 import { CommunityItem, CommunityModal, Modal, Plugin } from 'obsidian';
+import { dedupe, around } from 'monkey-around';
+import { MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_MODAL_OPEN, MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS } from './constants';
 
 export default class FavoritesPlugin extends Plugin {
 	favoritePlugins?: string[];
 	favoriteThemes?: string[];
 	communityPluginModalPrototype?: CommunityModal;
 	communityThemesModalPrototype?: CommunityModal;
+	uninstallModalOpen: () => void;
+	uninstallPluginBrowserModalUpdateItems: () => void;
+	uninstallPluginBrowserModalShowItem: () => void;
+	uninstallThemeBrowserModalUpdateItems: () => void;
+	uninstallThemeBrowserModalShowItem: () => void;
 
 	async onload() {
 		await this.loadSettings();
 
-		if (!Modal.prototype.originalOpen) {
-			Modal.prototype.originalOpen = Modal.prototype.open;
-			const originalModalOpen = Modal.prototype.open;
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const plugin = this;
 
-			Modal.prototype.open = (function (originalModalOpen, plugin) {
-				return function () {
-					originalModalOpen?.apply(this);
+		this.uninstallModalOpen = around(Modal.prototype, {
+			open(oldMethod) {
+				return dedupe(MONKEY_KEY_MODAL_OPEN, oldMethod, function (...args) {
+					const result = oldMethod && oldMethod.apply(this, args);
 
 					// Check the opened Modal is the Community plugin browse modal
 					if (this.containerEl?.querySelector('.mod-community-plugin')) {
-						// Store the Community Plugin Browse Modal prototype to be able to reset to the original
-						plugin.communityPluginModalPrototype = this.constructor.prototype;
-
-						// Check the plugin updateItems is already overwritten
-						if (!this.constructor.prototype.originalUpdateItems) {
-							// Save original method
-							this.constructor.prototype.originalUpdateItems = this.constructor.prototype.updateItems;
-							const originalUpdateItems = this.constructor.prototype.updateItems;
-							if (!this.constructor.prototype.originalUpdateItems) {
-								console.error('Favorites plugin: Failed to access original updateItems method!');
-								return;
-							}
-
-							// Overwrite method with additional functionality
-							this.constructor.prototype.updateItems = (function (originalUpdateItems, plugin) {
-								return function () {
+						// Patch updateItems method
+						plugin.uninstallPluginBrowserModalUpdateItems = around(this.constructor.prototype, {
+							updateItems(oldMethod) {
+								return dedupe(MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, oldMethod, function () {
 									// Load the favorite plugins
 									plugin.favoritePlugins = JSON.parse(localStorage.getItem('favorite-plugins') || '[]');
 
-									const result = originalUpdateItems.apply(this);
+									const result = oldMethod && oldMethod.apply(this, args);
 
 									// Add to the favorite plugins a tag to visualize it for the user
 									if (plugin.favoritePlugins) {
@@ -53,27 +48,18 @@ export default class FavoritesPlugin extends Plugin {
 									}
 
 									return result;
-								};
-							})(originalUpdateItems, plugin);
-						}
+								});
+							},
+						});
 
-						// Check the plugin showItem is already overwritten
-						if (!this.constructor.prototype.originalShowItem) {
-							// Save original method
-							this.constructor.prototype.originalShowItem = this.constructor.prototype.showItem;
-							const originalShowItem = this.constructor.prototype.showItem;
-							if (!this.constructor.prototype.originalShowItem) {
-								console.error('Favorites: Failed to access original showItem method!');
-								return;
-							}
-
-							// Overwrite method with additional functionality
-							this.constructor.prototype.showItem = (function (originalShowItem, plugin) {
-								return function (...args: CommunityItem[]) {
+						// Patch showItem method
+						plugin.uninstallPluginBrowserModalShowItem = around(this.constructor.prototype, {
+							showItem(oldMethod) {
+								return dedupe(MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, oldMethod, async function (...args: CommunityItem[]) {
 									// Load the favorite plugins
 									plugin.favoritePlugins = JSON.parse(localStorage.getItem('favorite-plugins') || '[]');
 
-									return originalShowItem.apply(this, args).then(async (r: void) => {
+									return oldMethod && oldMethod.apply(this, args).then(async (r: void) => {
 										const infoEl = await this.detailsEl.getElementsByClassName('community-modal-info')[0];
 										const infoNameEl = await infoEl?.getElementsByClassName('community-modal-info-name')[0];
 										const buttonContainerEl = await infoEl?.getElementsByClassName('community-modal-button-container')[0];
@@ -108,33 +94,21 @@ export default class FavoritesPlugin extends Plugin {
 
 										return r;
 									});
-								};
-							})(originalShowItem, plugin);
-						}
+								});
+							},
+						});
 					}
 
 					// Check the opened Modal is the Community themes browse modal
 					if (this.containerEl?.querySelector('.mod-community-theme')) {
-						// Store the Community Theme Browse Modal prototype to be able to reset to the original
-						plugin.communityThemesModalPrototype = this.constructor.prototype;
-
-						// Check the theme updateItems is already overwritten
-						if (!this.constructor.prototype.originalUpdateItems) {
-							// Save original method
-							this.constructor.prototype.originalUpdateItems = this.constructor.prototype.updateItems;
-							const originalUpdateItems = this.constructor.prototype.updateItems;
-							if (!this.constructor.prototype.originalUpdateItems) {
-								console.error('Favorites: Failed to access original updateItems method!');
-								return;
-							}
-
-							// Overwrite method with additional functionality
-							this.constructor.prototype.updateItems = (function (originalUpdateItems, plugin) {
-								return function () {
+						// Patch updateItems method
+						plugin.uninstallThemeBrowserModalUpdateItems = around(this.constructor.prototype, {
+							updateItems(oldMethod) {
+								return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, oldMethod, function () {
 									// Load the favorite themes
 									plugin.favoriteThemes = JSON.parse(localStorage.getItem('favorite-themes') || '[]');
 
-									const result = originalUpdateItems.apply(this);
+									const result = oldMethod && oldMethod.apply(this, args);
 
 									// Ignore the default theme
 									if (this.selectedItemId === '') {
@@ -154,27 +128,18 @@ export default class FavoritesPlugin extends Plugin {
 									}
 
 									return result;
-								};
-							})(originalUpdateItems, plugin);
-						}
+								});
+							},
+						});
 
-						// Check the theme showItem is already overwritten
-						if (!this.constructor.prototype.originalShowItem) {
-							// Save original method
-							this.constructor.prototype.originalShowItem = this.constructor.prototype.showItem;
-							const originalShowItem = this.constructor.prototype.showItem;
-							if (!this.constructor.prototype.originalShowItem) {
-								console.error('Favorites: Failed to access original showItem method!');
-								return;
-							}
+						// Patch showItems method
+						plugin.uninstallThemeBrowserModalShowItem = around(this.constructor.prototype, {
+							showItem(oldMethod) {
+								return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, oldMethod, async function (...args: CommunityItem[]) {
+									// Load the favorite themes
+									plugin.favoriteThemes = JSON.parse(localStorage.getItem('favorite-themes') || '[]');
 
-							// Overwrite method with additional functionality
-							this.constructor.prototype.showItem = (function (originalShowItem, plugin) {
-								// Load the favorite themes
-								plugin.favoriteThemes = JSON.parse(localStorage.getItem('favorite-themes') || '[]');
-
-								return function (...args: CommunityItem[]) {
-									return originalShowItem.apply(this, args).then(async (r: void) => {
+									return oldMethod && oldMethod.apply(this, args).then(async (r: void) => {
 										// Ignore the default theme
 										if (this.selectedItemId === '') {
 											return;
@@ -214,22 +179,17 @@ export default class FavoritesPlugin extends Plugin {
 
 										return r;
 									});
-								};
-							})(originalShowItem, plugin);
-						}
+								});
+							},
+						});
 					}
 
-					// Restore the original Modal open function as soon as the CommunityPluginModal and CommunityThemesModal is opened once
-					if (Modal.prototype.originalOpen && plugin.communityPluginModalPrototype && plugin.communityThemesModalPrototype) {
-						Modal.prototype.open = Modal.prototype.originalOpen;
-						delete Modal.prototype.originalOpen;
-					}
-				};
-			})(originalModalOpen, this);
-		}
-		else {
-			console.warn('Favorites plugin: Modal prototype already has originalOpen, this is not intended!');
-		}
+					return result;
+				});
+			},
+		});
+
+		// TODO: Redraw modals if local storage 'favorite-plugins' or 'favorite-themes' changed
 
 		/*
 		 * TODO: Add command to save and reload the favorites list
@@ -239,36 +199,12 @@ export default class FavoritesPlugin extends Plugin {
 	}
 
 	async onunload() {
-		// Restore the original Modal open function
-
-		if (Modal.prototype.originalOpen) {
-			Modal.prototype.open = Modal.prototype.originalOpen;
-			delete Modal.prototype.originalOpen;
-		}
-
-		// Restore the original plugin updateItems function
-		if (this.communityPluginModalPrototype && this.communityPluginModalPrototype.originalUpdateItems) {
-			this.communityPluginModalPrototype.updateItems = this.communityPluginModalPrototype.originalUpdateItems;
-			delete this.communityPluginModalPrototype.originalUpdateItems;
-		}
-
-		// Restore the original plugin showItem function
-		if (this.communityPluginModalPrototype && this.communityPluginModalPrototype.originalShowItem) {
-			this.communityPluginModalPrototype.showItem = this.communityPluginModalPrototype.originalShowItem;
-			delete this.communityPluginModalPrototype.originalShowItem;
-		}
-
-		// Restore the original theme updateItems function
-		if (this.communityThemesModalPrototype && this.communityThemesModalPrototype.originalUpdateItems) {
-			this.communityThemesModalPrototype.updateItems = this.communityThemesModalPrototype.originalUpdateItems;
-			delete this.communityThemesModalPrototype.originalUpdateItems;
-		}
-
-		// Restore the original theme showItem function
-		if (this.communityThemesModalPrototype && this.communityThemesModalPrototype.originalShowItem) {
-			this.communityThemesModalPrototype.showItem = this.communityThemesModalPrototype.originalShowItem;
-			delete this.communityThemesModalPrototype.originalShowItem;
-		}
+		// Restore the original functions
+		this.uninstallModalOpen();
+		this.uninstallPluginBrowserModalUpdateItems();
+		this.uninstallPluginBrowserModalShowItem();
+		this.uninstallThemeBrowserModalUpdateItems();
+		this.uninstallThemeBrowserModalShowItem();
 	}
 
 	async loadSettings() {
