@@ -25,17 +25,21 @@ export default class FavoritesPlugin extends Plugin {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const plugin = this;
 
+		console.debug('Patch Modal.open')
 		this.uninstallModalOpen = around(Modal.prototype, {
 			open(oldMethod) {
 				return dedupe(MONKEY_KEY_MODAL_OPEN, oldMethod, function (...args) {
+					console.debug('Call Modal.open')
 					const result = oldMethod && oldMethod.apply(this, args);
 
 					// Check the opened Modal is the Community plugin browse modal
 					if (this.containerEl?.querySelector('.mod-community-plugin')) {
 						// Patch updateItems method
+						console.debug('Patch PluginBrowserModal.updateItems')
 						plugin.uninstallPluginBrowserModalUpdateItems = around(this.constructor.prototype, {
 							updateItems(oldMethod) {
 								return dedupe(MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, oldMethod, function () {
+									console.debug('Call PluginBrowserModal.updateItems')
 									// Load the favorite plugins
 									plugin.favoritePlugins = JSON.parse(localStorage.getItem(this.pluginsKey) || '[]');
 
@@ -59,9 +63,11 @@ export default class FavoritesPlugin extends Plugin {
 						});
 
 						// Patch showItem method
+						console.debug('Patch PluginBrowserModal.showItem')
 						plugin.uninstallPluginBrowserModalShowItem = around(this.constructor.prototype, {
 							showItem(oldMethod) {
 								return dedupe(MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, oldMethod, async function (...args: CommunityItem[]) {
+									console.debug('Call PluginBrowserModal.showItem')
 									// Load the favorite plugins
 									plugin.favoritePlugins = JSON.parse(localStorage.getItem(this.pluginsKey) || '[]');
 
@@ -83,6 +89,7 @@ export default class FavoritesPlugin extends Plugin {
 										}
 
 										plugin.registerEvent(buttonContainerEl?.createEl('button', { text: isFavorite ? 'Unfavorite' : 'Favorite' }).addEventListener('click', () => {
+											console.log('PluginBrowserModal clicked Favorite')
 											if (isFavorite) {
 												plugin.favoritePlugins?.remove(this.selectedItemId);
 											}
@@ -108,9 +115,11 @@ export default class FavoritesPlugin extends Plugin {
 					// Check the opened Modal is the Community themes browse modal
 					if (this.containerEl?.querySelector('.mod-community-theme')) {
 						// Patch updateItems method
+						console.debug('Patch ThemeBrowserModal.updateItems')
 						plugin.uninstallThemeBrowserModalUpdateItems = around(this.constructor.prototype, {
 							updateItems(oldMethod) {
 								return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, oldMethod, function () {
+									console.debug('Call ThemeBrowserModal.updateItems')
 									// Load the favorite themes
 									plugin.favoriteThemes = JSON.parse(localStorage.getItem(this.themesKey) || '[]');
 
@@ -139,9 +148,11 @@ export default class FavoritesPlugin extends Plugin {
 						});
 
 						// Patch showItems method
+						console.debug('Patch ThemeBrowserModal.showItem')
 						plugin.uninstallThemeBrowserModalShowItem = around(this.constructor.prototype, {
 							showItem(oldMethod) {
 								return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, oldMethod, async function (...args: CommunityItem[]) {
+									console.debug('Call ThemeBrowserModal.showItem')
 									// Load the favorite themes
 									plugin.favoriteThemes = JSON.parse(localStorage.getItem(this.themesKey) || '[]');
 
@@ -168,6 +179,7 @@ export default class FavoritesPlugin extends Plugin {
 										}
 
 										plugin.registerEvent(buttonContainerEl?.createEl('button', { text: isFavorite ? 'Unfavorite' : 'Favorite' }).addEventListener('click', () => {
+											console.log('ThemeBrowserModal clicked Favorite')
 											if (isFavorite) {
 												plugin.favoriteThemes?.remove(this.selectedItemId);
 											}
@@ -206,11 +218,26 @@ export default class FavoritesPlugin extends Plugin {
 
 	async onunload() {
 		// Restore the original functions
-		this.uninstallModalOpen();
-		this.uninstallPluginBrowserModalUpdateItems();
-		this.uninstallPluginBrowserModalShowItem();
-		this.uninstallThemeBrowserModalUpdateItems();
-		this.uninstallThemeBrowserModalShowItem();
+		if (this.uninstallModalOpen) {
+			console.debug('Uninstall Modal.open')
+			this.uninstallModalOpen();
+		}
+		if (this.uninstallPluginBrowserModalUpdateItems) {
+			console.debug('Uninstall PluginBrowserModal.updateItem')
+			this.uninstallPluginBrowserModalUpdateItems();
+		}
+		if (this.uninstallPluginBrowserModalShowItem) {
+			console.debug('Uninstall PluginBrowserModal.showItem')
+			this.uninstallPluginBrowserModalShowItem();
+		}
+		if (this.uninstallThemeBrowserModalUpdateItems) {
+			console.debug('Uninstall ThemeBrowserModal.updateItem')
+			this.uninstallThemeBrowserModalUpdateItems();
+		}
+		if (this.uninstallThemeBrowserModalShowItem) {
+			console.debug('Uninstall ThemeBrowserModal.showItem')
+			this.uninstallThemeBrowserModalShowItem();
+		}
 	}
 
 	async loadSettings() {
