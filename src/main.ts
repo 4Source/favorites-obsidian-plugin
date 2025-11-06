@@ -16,13 +16,11 @@ export default class FavoritesPlugin extends Plugin {
 	uninstallThemeBrowserModalShowItem?: () => void;
 
 	async onload() {
-		await this.loadSettings();
-
 		this.pluginsKey = process.env.FAVORITE_PLUGINS_KEY || '';
 		this.themesKey = process.env.FAVORITE_THEMES_KEY || '';
 		console.debug(`Plugins key: ${this.pluginsKey} Themes key: ${this.themesKey}`);
 
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		// eslint-disable-next-line @typescript-eslint/no-this-alias -- Is required because the this context wil change inside the 'monkey-around' functions but the plugin is required to be accessible
 		const plugin = this;
 
 		if (!this.uninstallModalOpen) {
@@ -44,7 +42,7 @@ export default class FavoritesPlugin extends Plugin {
 											console.debug('Call PluginBrowserModal.updateItems');
 
 											// Load the favorite plugins
-											plugin.favoritePlugins = JSON.parse(localStorage.getItem(plugin.pluginsKey) || '[]');
+											plugin.loadFavoritePlugins;
 
 											const result = oldMethod && oldMethod.apply(this);
 
@@ -74,47 +72,47 @@ export default class FavoritesPlugin extends Plugin {
 								console.debug('Patch PluginBrowserModal.showItem');
 								plugin.uninstallPluginBrowserModalShowItem = around(this.constructor.prototype, {
 									showItem(oldMethod) {
-										return dedupe(MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, oldMethod, async function (...args: CommunityItem[]) {
+										return dedupe(MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, oldMethod, function (...args: CommunityItem[]) {
 											console.debug('Call PluginBrowserModal.showItem');
 
-											// Load the favorite plugins
-											plugin.favoritePlugins = JSON.parse(localStorage.getItem(plugin.pluginsKey) || '[]');
+											return oldMethod && oldMethod.apply(this, args)
+												.then(async (r: void) => {
+													const infoEl = await this.detailsEl.getElementsByClassName('community-modal-info')[0];
+													const infoNameEl = await infoEl?.getElementsByClassName('community-modal-info-name')[0];
+													const buttonContainerEl = await infoEl?.getElementsByClassName('community-modal-button-container')[0];
 
-											return oldMethod && oldMethod.apply(this, args).then(async (r: void) => {
-												const infoEl = await this.detailsEl.getElementsByClassName('community-modal-info')[0];
-												const infoNameEl = await infoEl?.getElementsByClassName('community-modal-info-name')[0];
-												const buttonContainerEl = await infoEl?.getElementsByClassName('community-modal-button-container')[0];
+													// Load the favorite plugins
+													plugin.loadFavoritePlugins();
+													const isFavorite = plugin.favoritePlugins?.contains(this.selectedItemId);
 
-												const isFavorite = plugin.favoritePlugins?.contains(this.selectedItemId);
-
-												// Add to the favorite plugins a tag to visualize it for the user
-												if (isFavorite) {
-													if (infoNameEl) {
-														infoNameEl.createSpan({
-															cls: 'flair',
-															text: 'favorite',
-														});
-													}
-												}
-
-												plugin.registerEvent(buttonContainerEl?.createEl('button', { text: isFavorite ? 'Unfavorite' : 'Favorite' }).addEventListener('click', () => {
+													// Add to the favorite plugins a tag to visualize it for the user
 													if (isFavorite) {
-														plugin.favoritePlugins?.remove(this.selectedItemId);
+														if (infoNameEl) {
+															infoNameEl.createSpan({
+																cls: 'flair',
+																text: 'favorite',
+															});
+														}
 													}
-													else {
-														plugin.favoritePlugins?.push(this.selectedItemId);
-													}
 
-													plugin.saveSettings();
+													plugin.registerEvent(buttonContainerEl?.createEl('button', { text: isFavorite ? 'Unfavorite' : 'Favorite' }).addEventListener('click', () => {
+														if (isFavorite) {
+															plugin.favoritePlugins?.remove(this.selectedItemId);
+														}
+														else {
+															plugin.favoritePlugins?.push(this.selectedItemId);
+														}
 
-													// Redraw
-													infoEl.detach();
-													this.showItem(this.items[this.selectedItemId]);
-													this.update();
-												}));
+														plugin.saveFavorites();
 
-												return r;
-											});
+														// Redraw
+														infoEl.detach();
+														this.showItem(this.items[this.selectedItemId]);
+														this.update();
+													}));
+
+													return r;
+												});
 										});
 									},
 								});
@@ -135,7 +133,7 @@ export default class FavoritesPlugin extends Plugin {
 											console.debug('Call ThemeBrowserModal.updateItems');
 
 											// Load the favorite themes
-											plugin.favoriteThemes = JSON.parse(localStorage.getItem(plugin.themesKey) || '[]');
+											plugin.loadFavoriteThemes();
 
 											const result = oldMethod && oldMethod.apply(this);
 
@@ -170,52 +168,52 @@ export default class FavoritesPlugin extends Plugin {
 								console.debug('Patch ThemeBrowserModal.showItem');
 								plugin.uninstallThemeBrowserModalShowItem = around(this.constructor.prototype, {
 									showItem(oldMethod) {
-										return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, oldMethod, async function (...args: CommunityItem[]) {
+										return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, oldMethod, function (...args: CommunityItem[]) {
 											console.debug('Call ThemeBrowserModal.showItem');
 
-											// Load the favorite themes
-											plugin.favoriteThemes = JSON.parse(localStorage.getItem(plugin.themesKey) || '[]');
-
-											return oldMethod && oldMethod.apply(this, args).then(async (r: void) => {
-												// Ignore the default theme
-												if (this.selectedItemId === '') {
-													return r;
-												}
-
-												const infoEl = await this.detailsEl.getElementsByClassName('community-modal-info')[0];
-												const infoNameEl = await infoEl?.getElementsByClassName('community-modal-info-name')[0];
-												const buttonContainerEl = await infoEl?.getElementsByClassName('community-modal-button-container')[0];
-
-												const isFavorite = plugin.favoriteThemes?.contains(this.selectedItemId);
-
-												// Add to the favorite themes a tag to visualize it for the user
-												if (isFavorite) {
-													if (infoNameEl) {
-														infoNameEl.createSpan({
-															cls: 'flair',
-															text: 'favorite',
-														});
+											return oldMethod && oldMethod.apply(this, args)
+												.then(async (r: void) => {
+													// Ignore the default theme
+													if (this.selectedItemId === '') {
+														return r;
 													}
-												}
 
-												plugin.registerEvent(buttonContainerEl?.createEl('button', { text: isFavorite ? 'Unfavorite' : 'Favorite' }).addEventListener('click', () => {
+													const infoEl = await this.detailsEl.getElementsByClassName('community-modal-info')[0];
+													const infoNameEl = await infoEl?.getElementsByClassName('community-modal-info-name')[0];
+													const buttonContainerEl = await infoEl?.getElementsByClassName('community-modal-button-container')[0];
+
+													// Load the favorite themes
+													plugin.loadFavoriteThemes();
+													const isFavorite = plugin.favoriteThemes?.contains(this.selectedItemId);
+
+													// Add to the favorite themes a tag to visualize it for the user
 													if (isFavorite) {
-														plugin.favoriteThemes?.remove(this.selectedItemId);
+														if (infoNameEl) {
+															infoNameEl.createSpan({
+																cls: 'flair',
+																text: 'favorite',
+															});
+														}
 													}
-													else {
-														plugin.favoriteThemes?.push(this.selectedItemId);
-													}
 
-													plugin.saveSettings();
+													plugin.registerEvent(buttonContainerEl?.createEl('button', { text: isFavorite ? 'Unfavorite' : 'Favorite' }).addEventListener('click', () => {
+														if (isFavorite) {
+															plugin.favoriteThemes?.remove(this.selectedItemId);
+														}
+														else {
+															plugin.favoriteThemes?.push(this.selectedItemId);
+														}
 
-													// Redraw
-													infoEl.detach();
-													this.showItem(this.items[this.selectedItemId]);
-													this.update();
-												}));
+														plugin.saveFavorites();
 
-												return r;
-											});
+														// Redraw
+														infoEl.detach();
+														this.showItem(this.items[this.selectedItemId]);
+														this.update();
+													}));
+
+													return r;
+												});
 										});
 									},
 								});
@@ -248,7 +246,7 @@ export default class FavoritesPlugin extends Plugin {
 		 */
 	}
 
-	async onunload() {
+	onunload() {
 		try {
 			// Restore the original functions
 			if (this.uninstallModalOpen) {
@@ -282,11 +280,17 @@ export default class FavoritesPlugin extends Plugin {
 		}
 	}
 
-	async loadSettings() {
-
+	loadFavoritePlugins() {
+		// Load the favorite plugins
+		this.favoritePlugins = JSON.parse(localStorage.getItem(this.pluginsKey) || '[]');
 	}
 
-	async saveSettings() {
+	loadFavoriteThemes() {
+		// Load the favorite plugins
+		this.favoritePlugins = JSON.parse(localStorage.getItem(this.themesKey) || '[]');
+	}
+
+	saveFavorites() {
 		if (this.favoritePlugins) {
 			if (this.favoritePlugins.length > 0) {
 				localStorage.setItem(this.pluginsKey, JSON.stringify(this.favoritePlugins));
