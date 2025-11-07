@@ -15,7 +15,7 @@ export default class FavoritesPlugin extends Plugin {
 	uninstallThemeBrowserModalUpdateItems?: () => void;
 	uninstallThemeBrowserModalShowItem?: () => void;
 
-	async onload() {
+	onload() {
 		this.pluginsKey = process.env.FAVORITE_PLUGINS_KEY || '';
 		this.themesKey = process.env.FAVORITE_THEMES_KEY || '';
 		console.debug(`Plugins key: ${this.pluginsKey} Themes key: ${this.themesKey}`);
@@ -42,7 +42,7 @@ export default class FavoritesPlugin extends Plugin {
 											console.debug('Call PluginBrowserModal.updateItems');
 
 											// Load the favorite plugins
-											plugin.loadFavoritePlugins;
+											plugin.loadFavoritePlugins();
 
 											const result = oldMethod && oldMethod.apply(this);
 
