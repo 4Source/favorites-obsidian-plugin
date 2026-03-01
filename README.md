@@ -4,13 +4,11 @@ Stop re-searching the same plugins or themes in every vault. With one central li
 
 # Features
 - **Global Favorites for Plugins & Themes** - Mark your go to plugins and themes once and use them in all vaults
-- **Ease of Use** - Favorite/unfavorite directly from the Obsidian's plugin and theme details browser
+- **Ease of Use** - Favorite/unfavorite directly inside the Obsidian's
+  - Plugin browser
+  - Community plugins tab
+  - Theme browser
 - **Vault Independence** - Favorites are stored globally on your device, not tied to a single vault
-
-# Screenshots
-<img width="1104" height="1004" alt="image" src="https://github.com/user-attachments/assets/61b41e7b-4569-4509-95f3-d5e8a667d653" />
-
-<img width="1104" height="1004" alt="image" src="https://github.com/user-attachments/assets/960eac0d-fea2-48e1-8faf-e54a7504149e" />
 
 # How It Works
 1. Install and enable ***Favorites***.
@@ -18,6 +16,15 @@ Stop re-searching the same plugins or themes in every vault. With one central li
 3. Select the plugin/theme you wan't to favorite.
 4. Use the Favorite button.
 5. Your favorites are saved globally and appear in every vault.
+
+For plugins you can also favorite already installed plugins directly from the Community plugins tab.
+
+# Screenshots
+<img width="1104" height="1004" alt="image" src="https://github.com/user-attachments/assets/61b41e7b-4569-4509-95f3-d5e8a667d653" />
+
+<img width="1100" height="1000" alt="image" src="https://github.com/user-attachments/assets/a0b35f98-b194-433f-bd9e-66eecb5dd111" />
+
+<img width="1104" height="1004" alt="image" src="https://github.com/user-attachments/assets/960eac0d-fea2-48e1-8faf-e54a7504149e" />
 
 # Contribution
 Feel free to contribute.
