@@ -1,6 +1,7 @@
-import { CommunityItem, CommunityModal, CommunityPluginsSettingTab, Modal, Plugin, setIcon, SettingsModal, SettingTab, setTooltip } from 'obsidian';
+import { CommunityItem, CommunityModal, CommunityPluginsSettingTab, Modal, Notice, Plugin, setIcon, SettingsModal, SettingTab, setTooltip } from 'obsidian';
 import { dedupe, around } from 'monkey-around';
 import { MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_MODAL_OPEN, MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_SETTINGS_MODAL_OPEN_TAB, MONKEY_KEY_COMMUNITY_PLUGIN_SETTINGS_TAB_RENDER_INSTALLED_PLUGIN } from './constants';
+import { DialogModal } from './modals/DialogModal';
 
 export default class FavoritesPlugin extends Plugin {
 	pluginsKey: string;
@@ -321,13 +322,71 @@ export default class FavoritesPlugin extends Plugin {
 			console.warn('Modal.open already patched!');
 		}
 
-		// TODO: Redraw modals if local storage 'favorite-plugins' or 'favorite-themes' changed
+		this.addCommand({
+			id: 'save-favorites-lists',
+			name: 'Manually save the favorites lists',
+			callback: () => {
+				this.saveFavorites();
+				new Notice('Saved favorite lists');
+			},
+		});
 
-		/*
-		 * TODO: Add command to save and reload the favorites list
-		 * TODO: Add command to remove all favorites from list
-		 * TODO: Add command to search for plugin to add to favorites list
-		 */
+		this.addCommand({
+			id: 'load-favorites-lists',
+			name: 'Manually load the favorites lists',
+			callback: () => {
+				this.loadFavorites();
+				new Notice('Loaded favorite lists');
+			},
+		});
+
+		this.addCommand({
+			id: 'clear-plugin-favorites-lists',
+			name: 'Clear the plugin favorites lists',
+			callback: () => {
+				this.loadFavoritePlugins();
+				const numberClear = this.favoritePlugins?.length || 0;
+				new DialogModal(this.app, `Clear ${numberClear} plugin(s) permanently from favorite list?`, '', () => {
+					this.favoritePlugins = [];
+					this.saveFavorites();
+					new Notice(`Cleared ${numberClear} plugins from favorite list`);
+				}, () => {
+					new Notice('Canceled clear plugins from favorite list');
+				}, 'Clear', true, 'Cancel', false).open();
+			},
+		});
+
+		this.addCommand({
+			id: 'clear-theme-favorites-lists',
+			name: 'Clear the theme favorites lists',
+			callback: () => {
+				this.loadFavoriteThemes();
+				const numberClear = this.favoriteThemes?.length || 0;
+				new DialogModal(this.app, `Clear ${numberClear} theme(s) permanently from favorite list?`, '', () => {
+					this.favoriteThemes = [];
+					this.saveFavorites();
+					new Notice(`Cleared ${numberClear} themes from favorite list`);
+				}, () => {
+					new Notice('Canceled clear themes from favorite list');
+				}, 'Clear', true, 'Cancel', false).open();
+			},
+		});
+
+		this.addCommand({
+			id: 'search-and-add-plugin-to-favorite-list',
+			name: 'Add plugin to favorite list',
+			callback: () => {
+
+			},
+		});
+
+		this.addCommand({
+			id: 'search-and-add-theme-to-favorite-list',
+			name: 'Add theme to favorite list',
+			callback: () => {
+
+			},
+		});
 	}
 
 	onunload() {
@@ -382,6 +441,11 @@ export default class FavoritesPlugin extends Plugin {
 	loadFavoriteThemes() {
 		// Load the favorite plugins
 		this.favoriteThemes = JSON.parse(localStorage.getItem(this.themesKey) || '[]');
+	}
+
+	loadFavorites() {
+		this.loadFavoritePlugins();
+		this.loadFavoriteThemes();
 	}
 
 	saveFavorites() {
