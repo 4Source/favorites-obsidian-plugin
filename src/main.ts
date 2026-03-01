@@ -16,8 +16,18 @@ export default class FavoritesPlugin extends Plugin {
 	uninstallThemeBrowserModalShowItem?: () => void;
 
 	onload() {
-		this.pluginsKey = process.env.FAVORITE_PLUGINS_KEY || '';
-		this.themesKey = process.env.FAVORITE_THEMES_KEY || '';
+		if (process.env.FAVORITE_PLUGINS_KEY) {
+			this.pluginsKey = process.env.FAVORITE_PLUGINS_KEY;
+		}
+		else {
+			throw Error('Missing environment variable \'FAVORITE_PLUGINS_KEY\'');
+		}
+		if (process.env.FAVORITE_THEMES_KEY) {
+			this.themesKey = process.env.FAVORITE_THEMES_KEY;
+		}
+		else {
+			throw Error('Missing environment variable \'FAVORITE_THEMES_KEY\'');
+		}
 		console.debug(`Plugins key: ${this.pluginsKey} Themes key: ${this.themesKey}`);
 
 		// eslint-disable-next-line @typescript-eslint/no-this-alias -- Is required because the this context wil change inside the 'monkey-around' functions but the plugin is required to be accessible
