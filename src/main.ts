@@ -64,7 +64,7 @@ export default class FavoritesPlugin extends Plugin {
 								});
 							}
 							else {
-								console.warn('PluginBrowserModal.updateItems already patched!');
+								console.debug('PluginBrowserModal.updateItems already patched!');
 							}
 
 							// Patch showItem method
@@ -118,7 +118,7 @@ export default class FavoritesPlugin extends Plugin {
 								});
 							}
 							else {
-								console.warn('PluginBrowserModal.showItem already patched!');
+								console.debug('PluginBrowserModal.showItem already patched!');
 							}
 						}
 
@@ -160,7 +160,7 @@ export default class FavoritesPlugin extends Plugin {
 								});
 							}
 							else {
-								console.warn('ThemeBrowserModal.updateItems already patched!');
+								console.debug('ThemeBrowserModal.updateItems already patched!');
 							}
 
 							// Patch showItems method
@@ -219,7 +219,7 @@ export default class FavoritesPlugin extends Plugin {
 								});
 							}
 							else {
-								console.warn('ThemeBrowserModal.showItem already patched!');
+								console.debug('ThemeBrowserModal.showItem already patched!');
 							}
 						}
 
@@ -287,7 +287,7 @@ export default class FavoritesPlugin extends Plugin {
 
 	loadFavoriteThemes() {
 		// Load the favorite plugins
-		this.favoritePlugins = JSON.parse(localStorage.getItem(this.themesKey) || '[]');
+		this.favoriteThemes = JSON.parse(localStorage.getItem(this.themesKey) || '[]');
 	}
 
 	saveFavorites() {
