@@ -1,6 +1,6 @@
-import { CommunityItem, CommunityModal, Modal, Plugin } from 'obsidian';
+import { CommunityItem, CommunityModal, CommunityPluginsSettingTab, Modal, Plugin, setIcon, SettingsModal, SettingTab, setTooltip } from 'obsidian';
 import { dedupe, around } from 'monkey-around';
-import { MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_MODAL_OPEN, MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS } from './constants';
+import { MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_MODAL_OPEN, MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_SETTINGS_MODAL_OPEN_TAB, MONKEY_KEY_COMMUNITY_PLUGIN_SETTINGS_TAB_RENDER_INSTALLED_PLUGIN } from './constants';
 
 export default class FavoritesPlugin extends Plugin {
 	pluginsKey: string;
@@ -10,10 +10,12 @@ export default class FavoritesPlugin extends Plugin {
 	communityPluginModalPrototype?: CommunityModal;
 	communityThemesModalPrototype?: CommunityModal;
 	uninstallModalOpen?: () => void;
+	uninstallSettingsModalOpenTab?: () => void;
 	uninstallPluginBrowserModalUpdateItems?: () => void;
 	uninstallPluginBrowserModalShowItem?: () => void;
 	uninstallThemeBrowserModalUpdateItems?: () => void;
 	uninstallThemeBrowserModalShowItem?: () => void;
+	uninstallCommunityPluginsSettingTabRenderInstalledPlugin?: () => void;
 
 	onload() {
 		if (process.env.FAVORITE_PLUGINS_KEY) {
@@ -32,6 +34,78 @@ export default class FavoritesPlugin extends Plugin {
 
 		// eslint-disable-next-line @typescript-eslint/no-this-alias -- Is required because the this context wil change inside the 'monkey-around' functions but the plugin is required to be accessible
 		const plugin = this;
+
+		// Patch the opening of SettingsModal
+		if (!this.uninstallSettingsModalOpenTab) {
+			console.debug('Patch SettingsModal.openTab');
+			this.uninstallSettingsModalOpenTab = around(this.app.setting as SettingsModal, {
+				openTab(oldMethod) {
+					return dedupe(MONKEY_KEY_SETTINGS_MODAL_OPEN_TAB, oldMethod, function (...args) {
+						console.debug('Call SettingsModal.openTab');
+
+						const tab = args[0] as SettingTab;
+						if (tab.id === 'community-plugins') {
+							if (!plugin.uninstallCommunityPluginsSettingTabRenderInstalledPlugin) {
+								console.debug('Patch CommunityPluginsSettingTab.renderInstalledPlugin');
+								plugin.uninstallCommunityPluginsSettingTabRenderInstalledPlugin = around((tab as CommunityPluginsSettingTab), {
+									renderInstalledPlugin(oldMethod) {
+										return dedupe(MONKEY_KEY_COMMUNITY_PLUGIN_SETTINGS_TAB_RENDER_INSTALLED_PLUGIN, oldMethod, function (...args) {
+											console.debug('Call CommunityPluginsSettingTab.renderInstalledPlugin');
+											oldMethod && oldMethod.apply(this, args);
+
+											// Load the favorite plugins
+											plugin.loadFavoritePlugins();
+
+											const selectedPluginID = args[0].id;
+											const isFavorite = plugin.favoritePlugins?.contains(selectedPluginID);
+
+											const favEl = createDiv('clickable-icon extra-setting-button');
+
+											plugin.registerDomEvent(favEl, 'click', () => {
+												if (isFavorite) {
+													plugin.favoritePlugins?.remove(selectedPluginID);
+												}
+												else {
+													plugin.favoritePlugins?.push(selectedPluginID);
+												}
+
+												plugin.saveFavorites();
+
+												// Redraw
+												(tab as CommunityPluginsSettingTab).render(false);
+											});
+
+											if (isFavorite) {
+												setIcon(favEl, 'star-off');
+												setTooltip(favEl, 'Unfavorite');
+											}
+											else {
+												setIcon(favEl, 'star');
+												setTooltip(favEl, 'Favorite');
+											}
+
+											// Add Favorite Icon to plugin control
+											const controlEl: HTMLElement = this.installedPlugins.listEl.lastChild?.getElementsByClassName('setting-item-control')[0];
+											controlEl.insertBefore(favEl, controlEl.children[0]);
+										});
+									},
+								});
+							}
+							else {
+								console.debug('CommunityPluginsSettingTab.renderInstalledPlugin already patched!');
+							}
+						}
+
+						if (plugin.uninstallSettingsModalOpenTab && plugin.uninstallCommunityPluginsSettingTabRenderInstalledPlugin) {
+							console.debug('Uninstall SettingsModal.openTab');
+							plugin.uninstallSettingsModalOpenTab();
+							plugin.uninstallSettingsModalOpenTab = undefined;
+						}
+						return oldMethod && oldMethod.apply(this, args);
+					});
+				},
+			});
+		}
 
 		if (!this.uninstallModalOpen) {
 			console.debug('Patch Modal.open');
@@ -264,6 +338,11 @@ export default class FavoritesPlugin extends Plugin {
 				this.uninstallModalOpen();
 				this.uninstallModalOpen = undefined;
 			}
+			if (this.uninstallSettingsModalOpenTab) {
+				console.debug('Uninstall SettingsModal.openTab');
+				this.uninstallSettingsModalOpenTab();
+				this.uninstallSettingsModalOpenTab = undefined;
+			}
 			if (this.uninstallPluginBrowserModalUpdateItems) {
 				console.debug('Uninstall PluginBrowserModal.updateItem');
 				this.uninstallPluginBrowserModalUpdateItems();
@@ -283,6 +362,11 @@ export default class FavoritesPlugin extends Plugin {
 				console.debug('Uninstall ThemeBrowserModal.showItem');
 				this.uninstallThemeBrowserModalShowItem();
 				this.uninstallThemeBrowserModalShowItem = undefined;
+			}
+			if (this.uninstallCommunityPluginsSettingTabRenderInstalledPlugin) {
+				console.debug('Uninstall CommunityPluginsSettingTab.renderInstalledPlugin');
+				this.uninstallCommunityPluginsSettingTabRenderInstalledPlugin();
+				this.uninstallCommunityPluginsSettingTabRenderInstalledPlugin = undefined;
 			}
 		}
 		catch (e) {
