@@ -26,6 +26,8 @@ If not related issue exists, open a new one using the appropriate <a href="../..
 #### 1. Fork the repository.
 #### 2. Create a new vault 
 Just for testing the plugin so you **can't** exedentially destroy your real vault
+> [!NOTE]
+> When you working with ``npm run dev`` the plugin will use another key to identify the favorite lists. This **should** ensure you are not overwriting your real favorite lists. When you are working with ``npm run build`` the plugin will use the real key. 
 #### 3. Clone repository to your local machine.
 ```shell
 cd path/to/vault
