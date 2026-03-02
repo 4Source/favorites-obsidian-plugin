@@ -2,7 +2,7 @@ import { App, FuzzyMatch, FuzzySuggestModal, renderResults } from 'obsidian';
 
 export class CommunitySuggestModal<T extends { name: string, author: string }> extends FuzzySuggestModal<T> {
 	private items: T[] = [];
-	private onSubmit: (result: T) => void;
+	private onSubmit: (result: T) => void = () => { };
 
 	constructor(app: App, title: string, items: T[], onSubmit: (result: T) => void) {
 		super(app);

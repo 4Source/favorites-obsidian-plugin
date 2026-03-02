@@ -1,9 +1,10 @@
-import { CommunityItem, CommunityPluginsSettingTab, Modal, Notice, Plugin, setIcon, SettingsModal, SettingTab, setTooltip } from 'obsidian';
+import { CommunityItem, CommunityPluginsSettingTab, Modal, normalizePath, Notice, Plugin, setIcon, SettingsModal, SettingTab, setTooltip } from 'obsidian';
 import { dedupe, around } from 'monkey-around';
-import { MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_MODAL_OPEN, MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_SETTINGS_MODAL_OPEN_TAB, MONKEY_KEY_COMMUNITY_PLUGIN_SETTINGS_TAB_RENDER_INSTALLED_PLUGIN } from './constants';
+import { MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_MODAL_OPEN, MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_SETTINGS_MODAL_OPEN_TAB, MONKEY_KEY_COMMUNITY_PLUGIN_SETTINGS_TAB_RENDER_INSTALLED_PLUGIN, PLUGIN_BACKUP_BASE_PATH } from './constants';
 import { DialogModal } from './modals/DialogModal';
 import { CommunitySuggestModal } from './modals/CommunitySuggestModal';
 import { CommunityPlugin, CommunityTheme, fetchCommunityPluginList, fetchCommunityThemeList } from './util/GitHub';
+import { StringSuggestModal } from './modals/StringSuggestModal';
 
 export default class FavoritesPlugin extends Plugin {
 	pluginsKey: string;
@@ -32,6 +33,7 @@ export default class FavoritesPlugin extends Plugin {
 			throw Error('Missing environment variable \'FAVORITE_THEMES_KEY\'');
 		}
 		console.debug(`Plugins key: ${this.pluginsKey} Themes key: ${this.themesKey}`);
+		this.loadFavorites();
 
 		// eslint-disable-next-line @typescript-eslint/no-this-alias -- Is required because the this context wil change inside the 'monkey-around' functions but the plugin is required to be accessible
 		const plugin = this;
@@ -451,6 +453,18 @@ export default class FavoritesPlugin extends Plugin {
 				}).open();
 			},
 		});
+
+		this.addCommand({
+			id: 'export-favorite-lists',
+			name: 'Export favorite lists to file',
+			callback: () => { this.exportFavorites(); },
+		});
+
+		this.addCommand({
+			id: 'import-favorite-lists',
+			name: 'Import favorite lists from file',
+			callback: () => { this.importFavorites(); },
+		});
 	}
 
 	onunload() {
@@ -533,5 +547,58 @@ export default class FavoritesPlugin extends Plugin {
 	saveFavorites() {
 		this.saveFavoritesPlugins();
 		this.saveFavoritesThemes();
+	}
+
+	async exportFavorites() {
+		if (this.favoritePlugins.length <= 0 && this.favoriteThemes.length <= 0) {
+			new Notice('No favorite lists to backup');
+			return;
+		}
+
+		// Ensure backup path does exist
+		const backupPath = normalizePath(`${this.app.vault.configDir}${PLUGIN_BACKUP_BASE_PATH}`);
+		await this.app.vault.adapter.mkdir(backupPath);
+
+		// Create the file name
+		const pad = (n: number) => n.toString().padStart(2, '0');
+		const date = new Date();
+		const dateString = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}-${pad(date.getHours())}-${pad(date.getMinutes())}`;
+		const backupFilePath = normalizePath(`${backupPath}/favorite-${dateString}.json`);
+
+		// Write backup file for lists
+		await this.app.vault.adapter.write(backupFilePath, JSON.stringify({ plugins: this.favoritePlugins, themes: this.favoriteThemes }));
+		new Notice(`Favorites list backup successful written to: ${backupFilePath}`);
+	}
+
+	async importFavorites() {
+		const backupPath = normalizePath(`${this.app.vault.configDir}${PLUGIN_BACKUP_BASE_PATH}`);
+		if (!(await this.app.vault.adapter.exists(backupPath))) {
+			// Backup path does not exist
+			new Notice(`Backup path does not exist: ${backupPath}`);
+			return;
+		}
+
+		const backupFiles = (await this.app.vault.adapter.list(backupPath)).files;
+		if (backupFiles.length <= 0) {
+			// Backup path is empty
+			new Notice('Backup path is empty');
+			return;
+		}
+
+		new StringSuggestModal(this.app, 'Select backup file to load from', backupFiles, async (result) => {
+			const content = await this.app.vault.adapter.read(result);
+			const json = JSON.parse(content);
+			const loadedPlugins = json.plugins || [];
+			const loadedThemes = json.themes || [];
+			new DialogModal(this.app, 'Are you sure you want to overwrite current favorite lists?', `The list of favorite plugins will change from ${this.favoritePlugins.length} items to ${loadedPlugins.length} items, and the list of favorite themes will change from ${this.favoriteThemes.length} items to ${loadedThemes.length} items.`, () => {
+				this.favoritePlugins = loadedPlugins;
+				this.favoriteThemes = loadedThemes;
+				this.saveFavorites();
+
+				new Notice('Loaded favorites backup successfully');
+			}, () => {
+				new Notice('Canceled loading favorites backup by user');
+			}, 'Overwrite', true, 'Cancel', false).open();
+		}).open();
 	}
 }
