@@ -2,7 +2,22 @@ import { } from 'obsidian';
 
 declare module 'obsidian' {
 	interface App {
-		setting: SettingsModal
+		setting: SettingsModal;
+		plugins: {
+			manifests: Record<string, PluginManifest>;
+		};
+		customCss: {
+			themes: Record<string, ThemeManifest>;
+		}
+	}
+
+	interface ThemeManifest {
+		author: string;
+		authorUrl: string;
+		dir: string;
+		minAppVersion: string;
+		name: string;
+		version: string;
 	}
 
 	interface CommunityItem {

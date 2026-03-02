@@ -1,7 +1,9 @@
-import { CommunityItem, CommunityModal, CommunityPluginsSettingTab, Modal, Notice, Plugin, setIcon, SettingsModal, SettingTab, setTooltip } from 'obsidian';
+import { CommunityItem, CommunityPluginsSettingTab, Modal, Notice, Plugin, setIcon, SettingsModal, SettingTab, setTooltip } from 'obsidian';
 import { dedupe, around } from 'monkey-around';
 import { MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_MODAL_OPEN, MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_SETTINGS_MODAL_OPEN_TAB, MONKEY_KEY_COMMUNITY_PLUGIN_SETTINGS_TAB_RENDER_INSTALLED_PLUGIN } from './constants';
 import { DialogModal } from './modals/DialogModal';
+import { CommunitySuggestModal } from './modals/CommunitySuggestModal';
+import { CommunityPlugin, CommunityTheme, fetchCommunityPluginList, fetchCommunityThemeList } from './util/GitHub';
 
 export default class FavoritesPlugin extends Plugin {
 	pluginsKey: string;
@@ -369,16 +371,84 @@ export default class FavoritesPlugin extends Plugin {
 		this.addCommand({
 			id: 'search-and-add-plugin-to-favorite-list',
 			name: 'Add plugin to favorite list',
-			callback: () => {
+			callback: async () => {
+				const items = await fetchCommunityPluginList();
+				if (!items) {
+					new Notice('Failed to fetch community plugins. See console for more information.');
+					return;
+				}
 
+				new CommunitySuggestModal<CommunityPlugin>(this.app, 'Select plugin which should be added to favorites list...', items, (result) => {
+					this.loadFavoritePlugins();
+					this.favoritePlugins.push(result.id);
+					this.saveFavoritesPlugins();
+					new Notice(`Added ${result.name} to favorite list`);
+				}).open();
 			},
 		});
 
 		this.addCommand({
 			id: 'search-and-add-theme-to-favorite-list',
 			name: 'Add theme to favorite list',
-			callback: () => {
+			callback: async () => {
+				const items = await fetchCommunityThemeList();
+				if (!items) {
+					new Notice('Failed to fetch community themes. See console for more information.');
+					return;
+				}
 
+				new CommunitySuggestModal<CommunityTheme>(this.app, 'Select theme which should be added to favorites list...', items, (result) => {
+					this.loadFavoriteThemes();
+					this.favoriteThemes.push(result.name);
+					this.saveFavoritesThemes();
+					new Notice(`Added ${result.name} to favorite list`);
+				}).open();
+			},
+		});
+
+		this.addCommand({
+			id: 'search-and-remove-plugin-to-favorite-list',
+			name: 'Remove plugin from favorite list',
+			callback: async () => {
+				this.loadFavoritePlugins();
+				if (this.favoritePlugins.length <= 0) {
+					new Notice('Plugin favorite list is empty');
+					return;
+				}
+				const communityItems = await fetchCommunityPluginList();
+				const installedItems = Object.values(this.app.plugins.manifests);
+				const items = this.favoritePlugins.map((value) => {
+					return communityItems?.find((communityValue) => value === communityValue.id) || installedItems.find(installedValue => value === installedValue.id) as unknown as CommunityPlugin || { id: value, name: value, author: 'unknown' } as CommunityPlugin;
+				});
+
+				new CommunitySuggestModal<CommunityPlugin>(this.app, 'Select plugin which should be removed from the favorites list...', items, (result) => {
+					this.favoritePlugins.remove(result.id);
+					this.saveFavoritesPlugins();
+					new Notice(`Removed ${result.name} from favorite list`);
+				}).open();
+			},
+		});
+
+		this.addCommand({
+			id: 'search-and-remove-theme-to-favorite-list',
+			name: 'Remove theme from favorite list',
+			callback: async () => {
+				this.loadFavoriteThemes();
+				if (this.favoriteThemes.length <= 0) {
+					new Notice('Theme favorite list is empty');
+					return;
+				}
+				const communityItems = await fetchCommunityThemeList();
+				const installedItems = Object.values(this.app.customCss.themes);
+				const items = this.favoriteThemes.map((value) => {
+					return communityItems?.find((communityValue) => value === communityValue.name) || installedItems.find(installedValue => value === installedValue.name) as unknown as CommunityTheme || { name: value, author: 'unknown' } as CommunityTheme;
+				});
+
+				new CommunitySuggestModal<CommunityTheme>(this.app, 'Select theme which should be removed from the favorites list...', items, (result) => {
+					this.favoriteThemes.remove(result.name);
+					this.saveFavoritesThemes();
+					new Notice(`Removed ${result.name} from favorite list`);
+				}).open();
 			},
 		});
 	}
