@@ -374,14 +374,22 @@ export default class FavoritesPlugin extends Plugin {
 			id: 'search-and-add-plugin-to-favorite-list',
 			name: 'Add plugin to favorite list',
 			callback: async () => {
-				const items = await fetchCommunityPluginList();
+				let items = await fetchCommunityPluginList();
 				if (!items) {
 					new Notice('Failed to fetch community plugins. See console for more information.');
 					return;
 				}
 
+				// Filter out favorites
+				this.loadFavoritePlugins();
+				items = items.filter(value => !this.favoritePlugins.contains(value.id));
+
+				if (items.length <= 0) {
+					new Notice('No plugin left which is could be added to favorite list');
+					return;
+				}
+
 				new CommunitySuggestModal<CommunityPlugin>(this.app, 'Select plugin which should be added to favorites list...', items, (result) => {
-					this.loadFavoritePlugins();
 					this.favoritePlugins.push(result.id);
 					this.saveFavoritesPlugins();
 					new Notice(`Added ${result.name} to favorite list`);
@@ -393,14 +401,22 @@ export default class FavoritesPlugin extends Plugin {
 			id: 'search-and-add-theme-to-favorite-list',
 			name: 'Add theme to favorite list',
 			callback: async () => {
-				const items = await fetchCommunityThemeList();
+				let items = await fetchCommunityThemeList();
 				if (!items) {
 					new Notice('Failed to fetch community themes. See console for more information.');
 					return;
 				}
 
+				// Filter out favorites
+				this.loadFavoriteThemes();
+				items = items.filter(value => !this.favoriteThemes.contains(value.name));
+
+				if (items.length <= 0) {
+					new Notice('No theme left which is could be added to favorite list');
+					return;
+				}
+
 				new CommunitySuggestModal<CommunityTheme>(this.app, 'Select theme which should be added to favorites list...', items, (result) => {
-					this.loadFavoriteThemes();
 					this.favoriteThemes.push(result.name);
 					this.saveFavoritesThemes();
 					new Notice(`Added ${result.name} to favorite list`);
@@ -409,7 +425,7 @@ export default class FavoritesPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'search-and-remove-plugin-to-favorite-list',
+			id: 'search-and-remove-plugin-from-favorite-list',
 			name: 'Remove plugin from favorite list',
 			callback: async () => {
 				this.loadFavoritePlugins();
@@ -432,7 +448,7 @@ export default class FavoritesPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'search-and-remove-theme-to-favorite-list',
+			id: 'search-and-remove-theme-from-favorite-list',
 			name: 'Remove theme from favorite list',
 			callback: async () => {
 				this.loadFavoriteThemes();
