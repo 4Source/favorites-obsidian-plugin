@@ -35,6 +35,18 @@ export default class FavoritesPlugin extends Plugin {
 		console.debug(`Plugins key: ${this.pluginsKey} Themes key: ${this.themesKey}`);
 		this.loadFavorites();
 
+		// Register
+		this.registerDomEvent(window, 'storage', (event) => {
+			if (event.key === this.pluginsKey) {
+				console.debug('Plugins key content changed', event);
+				this.onFavoritePluginsChanged(event.newValue);
+			}
+			if (event.key === this.themesKey) {
+				console.debug('Themes key content changed', event);
+				this.onFavoriteThemesChanged(event.newValue);
+			}
+		});
+
 		// eslint-disable-next-line @typescript-eslint/no-this-alias -- Is required because the this context wil change inside the 'monkey-around' functions but the plugin is required to be accessible
 		const plugin = this;
 
@@ -524,6 +536,26 @@ export default class FavoritesPlugin extends Plugin {
 		}
 		catch (e) {
 			console.error(e);
+		}
+	}
+
+	onFavoritePluginsChanged(newValue: string | null) {
+		console.debug(`onFavoritePluginsChanged: ${newValue}`);
+		if (newValue) {
+			this.favoritePlugins = JSON.parse(newValue);
+		}
+		else {
+			this.favoritePlugins = [];
+		}
+	}
+
+	onFavoriteThemesChanged(newValue: string | null) {
+		console.debug(`onFavoriteThemesChanged: ${newValue}`);
+		if (newValue) {
+			this.favoriteThemes = JSON.parse(newValue);
+		}
+		else {
+			this.favoriteThemes = [];
 		}
 	}
 
