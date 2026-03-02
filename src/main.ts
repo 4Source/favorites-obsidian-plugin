@@ -6,10 +6,8 @@ import { DialogModal } from './modals/DialogModal';
 export default class FavoritesPlugin extends Plugin {
 	pluginsKey: string;
 	themesKey: string;
-	favoritePlugins?: string[];
-	favoriteThemes?: string[];
-	communityPluginModalPrototype?: CommunityModal;
-	communityThemesModalPrototype?: CommunityModal;
+	favoritePlugins: string[];
+	favoriteThemes: string[];
 	uninstallModalOpen?: () => void;
 	uninstallSettingsModalOpenTab?: () => void;
 	uninstallPluginBrowserModalUpdateItems?: () => void;
@@ -58,19 +56,19 @@ export default class FavoritesPlugin extends Plugin {
 											plugin.loadFavoritePlugins();
 
 											const selectedPluginID = args[0].id;
-											const isFavorite = plugin.favoritePlugins?.contains(selectedPluginID);
+											const isFavorite = plugin.favoritePlugins.contains(selectedPluginID);
 
 											const favEl = createDiv('clickable-icon extra-setting-button');
 
 											plugin.registerDomEvent(favEl, 'click', () => {
 												if (isFavorite) {
-													plugin.favoritePlugins?.remove(selectedPluginID);
+													plugin.favoritePlugins.remove(selectedPluginID);
 												}
 												else {
-													plugin.favoritePlugins?.push(selectedPluginID);
+													plugin.favoritePlugins.push(selectedPluginID);
 												}
 
-												plugin.saveFavorites();
+												plugin.saveFavoritesPlugins();
 
 												// Redraw
 												(tab as CommunityPluginsSettingTab).render(false);
@@ -132,16 +130,14 @@ export default class FavoritesPlugin extends Plugin {
 											const result = oldMethod && oldMethod.apply(this);
 
 											// Add to the favorite plugins a tag to visualize it for the user
-											if (plugin.favoritePlugins) {
-												plugin.favoritePlugins.forEach(id => {
-													if (this.items && this.items[id]?.nameEl) {
-														this.items[id].nameEl.createSpan({
-															cls: 'flair',
-															text: 'favorite',
-														});
-													}
-												});
-											}
+											plugin.favoritePlugins.forEach(id => {
+												if (this.items && this.items[id]?.nameEl) {
+													this.items[id].nameEl.createSpan({
+														cls: 'flair',
+														text: 'favorite',
+													});
+												}
+											});
 
 											return result;
 										});
@@ -168,7 +164,7 @@ export default class FavoritesPlugin extends Plugin {
 
 													// Load the favorite plugins
 													plugin.loadFavoritePlugins();
-													const isFavorite = plugin.favoritePlugins?.contains(this.selectedItemId);
+													const isFavorite = plugin.favoritePlugins.contains(this.selectedItemId);
 
 													// Add to the favorite plugins a tag to visualize it for the user
 													if (isFavorite) {
@@ -182,13 +178,13 @@ export default class FavoritesPlugin extends Plugin {
 
 													plugin.registerEvent(buttonContainerEl?.createEl('button', { text: isFavorite ? 'Unfavorite' : 'Favorite' }).addEventListener('click', () => {
 														if (isFavorite) {
-															plugin.favoritePlugins?.remove(this.selectedItemId);
+															plugin.favoritePlugins.remove(this.selectedItemId);
 														}
 														else {
-															plugin.favoritePlugins?.push(this.selectedItemId);
+															plugin.favoritePlugins.push(this.selectedItemId);
 														}
 
-														plugin.saveFavorites();
+														plugin.saveFavoritesPlugins();
 
 														// Redraw
 														infoEl.detach();
@@ -228,16 +224,14 @@ export default class FavoritesPlugin extends Plugin {
 											}
 
 											// Add to the favorite themes a tag to visualize it for the user
-											if (plugin.favoriteThemes) {
-												plugin.favoriteThemes.forEach(id => {
-													if (this.items && this.items[id]?.nameEl) {
-														this.items[id].nameEl.createSpan({
-															cls: 'flair',
-															text: 'favorite',
-														});
-													}
-												});
-											}
+											plugin.favoriteThemes.forEach(id => {
+												if (this.items && this.items[id]?.nameEl) {
+													this.items[id].nameEl.createSpan({
+														cls: 'flair',
+														text: 'favorite',
+													});
+												}
+											});
 
 											return result;
 										});
@@ -269,7 +263,7 @@ export default class FavoritesPlugin extends Plugin {
 
 													// Load the favorite themes
 													plugin.loadFavoriteThemes();
-													const isFavorite = plugin.favoriteThemes?.contains(this.selectedItemId);
+													const isFavorite = plugin.favoriteThemes.contains(this.selectedItemId);
 
 													// Add to the favorite themes a tag to visualize it for the user
 													if (isFavorite) {
@@ -283,13 +277,13 @@ export default class FavoritesPlugin extends Plugin {
 
 													plugin.registerEvent(buttonContainerEl?.createEl('button', { text: isFavorite ? 'Unfavorite' : 'Favorite' }).addEventListener('click', () => {
 														if (isFavorite) {
-															plugin.favoriteThemes?.remove(this.selectedItemId);
+															plugin.favoriteThemes.remove(this.selectedItemId);
 														}
 														else {
-															plugin.favoriteThemes?.push(this.selectedItemId);
+															plugin.favoriteThemes.push(this.selectedItemId);
 														}
 
-														plugin.saveFavorites();
+														plugin.saveFavoritesThemes();
 
 														// Redraw
 														infoEl.detach();
@@ -345,10 +339,10 @@ export default class FavoritesPlugin extends Plugin {
 			name: 'Clear the plugin favorites lists',
 			callback: () => {
 				this.loadFavoritePlugins();
-				const numberClear = this.favoritePlugins?.length || 0;
+				const numberClear = this.favoritePlugins.length;
 				new DialogModal(this.app, `Clear ${numberClear} plugin(s) permanently from favorite list?`, '', () => {
 					this.favoritePlugins = [];
-					this.saveFavorites();
+					this.saveFavoritesPlugins();
 					new Notice(`Cleared ${numberClear} plugins from favorite list`);
 				}, () => {
 					new Notice('Canceled clear plugins from favorite list');
@@ -361,10 +355,10 @@ export default class FavoritesPlugin extends Plugin {
 			name: 'Clear the theme favorites lists',
 			callback: () => {
 				this.loadFavoriteThemes();
-				const numberClear = this.favoriteThemes?.length || 0;
+				const numberClear = this.favoriteThemes.length;
 				new DialogModal(this.app, `Clear ${numberClear} theme(s) permanently from favorite list?`, '', () => {
 					this.favoriteThemes = [];
-					this.saveFavorites();
+					this.saveFavoritesThemes();
 					new Notice(`Cleared ${numberClear} themes from favorite list`);
 				}, () => {
 					new Notice('Canceled clear themes from favorite list');
@@ -448,23 +442,26 @@ export default class FavoritesPlugin extends Plugin {
 		this.loadFavoriteThemes();
 	}
 
-	saveFavorites() {
-		if (this.favoritePlugins) {
-			if (this.favoritePlugins.length > 0) {
-				localStorage.setItem(this.pluginsKey, JSON.stringify(this.favoritePlugins));
-			}
-			else {
-				localStorage.removeItem(this.pluginsKey);
-			}
+	saveFavoritesPlugins() {
+		if (this.favoritePlugins.length > 0) {
+			localStorage.setItem(this.pluginsKey, JSON.stringify(this.favoritePlugins));
 		}
+		else {
+			localStorage.removeItem(this.pluginsKey);
+		}
+	}
 
-		if (this.favoriteThemes) {
-			if (this.favoriteThemes.length > 0) {
-				localStorage.setItem(this.themesKey, JSON.stringify(this.favoriteThemes));
-			}
-			else {
-				localStorage.removeItem(this.themesKey);
-			}
+	saveFavoritesThemes() {
+		if (this.favoriteThemes.length > 0) {
+			localStorage.setItem(this.themesKey, JSON.stringify(this.favoriteThemes));
 		}
+		else {
+			localStorage.removeItem(this.themesKey);
+		}
+	}
+
+	saveFavorites() {
+		this.saveFavoritesPlugins();
+		this.saveFavoritesThemes();
 	}
 }
