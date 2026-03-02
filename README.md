@@ -8,6 +8,7 @@ Stop re-searching the same plugins or themes in every vault. With one central li
   - Plugin browser
   - Community plugins tab
   - Theme browser
+  - via [Commands](#commands)
 - **Vault Independence** - Favorites are stored globally on your device, not tied to a single vault
 
 # How It Works
@@ -25,6 +26,62 @@ For plugins you can also favorite already installed plugins directly from the Co
 <img width="1100" height="1000" alt="image" src="https://github.com/user-attachments/assets/a0b35f98-b194-433f-bd9e-66eecb5dd111" />
 
 <img width="1104" height="1004" alt="image" src="https://github.com/user-attachments/assets/960eac0d-fea2-48e1-8faf-e54a7504149e" />
+
+# Commands
+If you prefer managing your favorites list with commands here are the available commands
+- [Add plugin to favorite list](#add-plugin-to-favorite-list) 
+- [Add theme to favorite list](#add-theme-to-favorite-list) 
+- [Remove plugin from favorite list](#remove-plugin-from-favorite-list) 
+- [Remove theme from favorite list](#remove-theme-from-favorite-list) 
+- [Clear the plugin favorites lists](#clear-the-plugin-favorites-lists) 
+- [Clear the theme favorites lists](#clear-the-theme-favorites-lists) 
+- [Manually load the favorites lists](#manually-load-the-favorites-lists) 
+- [Manually save the favorites lists](#manually-save-the-favorites-lists) 
+- [Export favorite lists to file](#export-favorite-lists-to-file) 
+- [Import favorite lists from file](#import-favorite-lists-from-file) 
+
+## Add plugin to favorite list
+Search and select a community plugin to add it to your favorites list. The list is fetched from the community plugin registry.
+
+## Add theme to favorite list
+Search and select a community theme to add it to your favorites list. The list is fetched from the community theme registry.
+
+## Remove plugin from favorite list
+Search and select from your current favorite plugins to remove it from your favorites list.
+
+## Remove theme from favorite list
+Search and select from your current favorite themes to remove it from your favorites list.
+
+## Clear the plugin favorites lists
+Permanently removes ***all*** plugins from your favorites list after confirmation. 
+> [!WARNING]
+> This action cannot be undone.
+
+## Clear the theme favorites lists
+Permanently removes ***all*** themes from your favorites list after confirmation.
+> [!WARNING]
+> This action cannot be undone.
+
+## Manually load the favorites lists
+Reloads the saved favorite plugins and themes. Use this to restore your favorites if they were changed externally or need to be refreshed.
+> [!NOTE]
+> This is normally not necessary because the plugin handles this internally.
+
+## Manually save the favorites lists
+Forces the plugin to immediately save your current favorite plugins and themes. Use this if you want to ensure your favorites are persistent.
+> [!WARNING] 
+> This could overwrite changes from another running Obsidian instance if the changes from there are not loaded beforehand.
+
+> [!NOTE]
+> This is normally not necessary because the plugin handles this internally. 
+
+## Export favorite lists to file
+Creates a backup file containing your current favorite plugins and themes. The backup is saved as a timestamped JSON file inside the plugin’s backup folder within your vault configuration directory.
+
+## Import favorite lists from file
+Restores favorite plugins and themes from a previously created backup file. You will be prompted to select a backup file from the plugin’s backup folder. After confirmation imported favorites will replaces your current favorites with the contents of the selected backup.
+> [!WARNING] 
+> This will overwrite current favorite lists and can't be undone.
 
 # Contribution
 Feel free to contribute.
