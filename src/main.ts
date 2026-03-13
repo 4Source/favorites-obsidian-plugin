@@ -2,8 +2,6 @@ import { CommunityItem, CommunityPluginsSettingTab, Modal, normalizePath, Notice
 import { dedupe, around } from 'monkey-around';
 import { MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_MODAL_OPEN, MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS, MONKEY_KEY_SETTINGS_MODAL_OPEN_TAB, MONKEY_KEY_COMMUNITY_PLUGIN_SETTINGS_TAB_RENDER_INSTALLED_PLUGIN, PLUGIN_BACKUP_BASE_PATH } from './constants';
 import { DialogModal } from './modals/DialogModal';
-import { CommunitySuggestModal } from './modals/CommunitySuggestModal';
-import { CommunityPlugin, CommunityTheme, fetchCommunityPluginList, fetchCommunityThemeList } from './util/GitHub';
 import { StringSuggestModal } from './modals/StringSuggestModal';
 import { addAllCommands } from './commands';
 
