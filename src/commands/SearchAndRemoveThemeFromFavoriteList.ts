@@ -21,7 +21,7 @@ export default function (plugin: CurrentPlugin): Command {
 
 			new CommunitySuggestModal<CommunityTheme>(plugin.app, 'Select theme which should be removed from the favorites list...', items, (result) => {
 				plugin.favoriteThemes.remove(result.name);
-				plugin.saveFavoritesThemes();
+				plugin.saveFavoriteThemes();
 				new Notice(`Removed ${result.name} from favorite list`);
 			}).open();
 		},

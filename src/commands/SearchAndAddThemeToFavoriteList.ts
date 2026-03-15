@@ -25,7 +25,7 @@ export default function (plugin: CurrentPlugin): Command {
 
 			new CommunitySuggestModal<CommunityTheme>(plugin.app, 'Select theme which should be added to favorites list...', items, (result) => {
 				plugin.favoriteThemes.push(result.name);
-				plugin.saveFavoritesThemes();
+				plugin.saveFavoriteThemes();
 				new Notice(`Added ${result.name} to favorite list`);
 			}).open();
 		},

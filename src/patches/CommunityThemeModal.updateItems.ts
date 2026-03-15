@@ -8,8 +8,10 @@ export default (context: CommunityThemeModal, plugin: MyPlugin) => around(contex
 		return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, oldMethod, function () {
 			console.debug('Call CommunityThemeModal.updateItems');
 
-			// Load the favorite themes
+			// Load the theme lists
 			plugin.loadFavoriteThemes();
+			plugin.loadInUseThemes();
+			plugin.loadKnownThemes();
 
 			const result = oldMethod && oldMethod.apply(this);
 
@@ -23,7 +25,27 @@ export default (context: CommunityThemeModal, plugin: MyPlugin) => around(contex
 				if (this.items && this.items[id]?.nameEl) {
 					this.items[id].nameEl.createSpan({
 						cls: 'flair',
-						text: 'favorite',
+						text: 'FAVORITE',
+					});
+				}
+			});
+
+			// Add to the in use themes a tag to visualize it for the user
+			Object.keys(plugin.inUseThemes).forEach(id => {
+				if (this.items && this.items[id]?.nameEl) {
+					this.items[id].nameEl.createSpan({
+						cls: 'flair',
+						text: 'IN USE',
+					});
+				}
+			});
+
+			// Add to the known themes a tag to visualize it for the user
+			plugin.knownThemes.forEach(id => {
+				if (this.items && this.items[id]?.nameEl) {
+					this.items[id].nameEl.createSpan({
+						cls: 'flair',
+						text: 'KNOWN',
 					});
 				}
 			});

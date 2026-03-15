@@ -11,7 +11,7 @@ export default function (plugin: CurrentPlugin): Command {
 			const numberClear = plugin.favoriteThemes.length;
 			new DialogModal(plugin.app, `Clear ${numberClear} theme(s) permanently from favorite list?`, '', () => {
 				plugin.favoriteThemes = [];
-				plugin.saveFavoritesThemes();
+				plugin.saveFavoriteThemes();
 				new Notice(`Cleared ${numberClear} themes from favorite list`);
 			}, () => {
 				new Notice('Canceled clear themes from favorite list');

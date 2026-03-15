@@ -1,0 +1,5 @@
+.community-item-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+}

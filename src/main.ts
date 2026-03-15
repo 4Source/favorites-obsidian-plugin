@@ -1,16 +1,21 @@
-import { normalizePath, Notice, Plugin } from 'obsidian';
-import { PLUGIN_BACKUP_BASE_PATH } from './constants';
-import { DialogModal } from './modals/DialogModal';
-import { StringSuggestModal } from './modals/StringSuggestModal';
+import { Plugin } from 'obsidian';
 import { addAllCommands } from './commands';
 import SettingsModalOpenTab from './patches/SettingsModal.openTab';
 import ModalOpen from './patches/Modal.open';
 
 export default class FavoritesPlugin extends Plugin {
-	pluginsKey: string;
-	themesKey: string;
+	pluginFavoritesKey: string;
 	favoritePlugins: string[];
+	themeFavoritesKey: string;
 	favoriteThemes: string[];
+	pluginInUseKey: string;
+	inUsePlugins: Record<string, string[]>;
+	themeInUseKey: string;
+	inUseThemes: Record<string, string[]>;
+	pluginKnownKey: string;
+	knownPlugins: string[];
+	themeKnownKey: string;
+	knownThemes: string[];
 	uninstallModalOpen?: () => void;
 	uninstallSettingsModalOpenTab?: () => void;
 	uninstallCommunityPluginModalUpdateItems?: () => void;
@@ -20,32 +25,8 @@ export default class FavoritesPlugin extends Plugin {
 	uninstallCommunityPluginsSettingTabRenderInstalledPlugin?: () => void;
 
 	async onload() {
-		if (process.env.FAVORITE_PLUGINS_KEY) {
-			this.pluginsKey = process.env.FAVORITE_PLUGINS_KEY;
-		}
-		else {
-			throw Error('Missing environment variable \'FAVORITE_PLUGINS_KEY\'');
-		}
-		if (process.env.FAVORITE_THEMES_KEY) {
-			this.themesKey = process.env.FAVORITE_THEMES_KEY;
-		}
-		else {
-			throw Error('Missing environment variable \'FAVORITE_THEMES_KEY\'');
-		}
-		console.debug(`Plugins key: ${this.pluginsKey} Themes key: ${this.themesKey}`);
-		this.loadFavorites();
-
-		// Register
-		this.registerDomEvent(window, 'storage', (event) => {
-			if (event.key === this.pluginsKey) {
-				console.debug('Plugins key content changed', event);
-				this.onFavoritePluginsChanged(event.newValue);
-			}
-			if (event.key === this.themesKey) {
-				console.debug('Themes key content changed', event);
-				this.onFavoriteThemesChanged(event.newValue);
-			}
-		});
+		this.loadStorageKeys();
+		this.loadLists();
 
 		// Patch the opening of SettingsModal
 		if (!this.uninstallSettingsModalOpenTab) {
@@ -108,6 +89,81 @@ export default class FavoritesPlugin extends Plugin {
 		}
 	}
 
+	loadStorageKeys() {
+		// favorite keys
+		if (process.env.FAVORITE_PLUGINS_KEY) {
+			this.pluginFavoritesKey = process.env.FAVORITE_PLUGINS_KEY;
+		}
+		else {
+			throw Error('Missing environment variable \'FAVORITE_PLUGINS_KEY\'');
+		}
+		if (process.env.FAVORITE_THEMES_KEY) {
+			this.themeFavoritesKey = process.env.FAVORITE_THEMES_KEY;
+		}
+		else {
+			throw Error('Missing environment variable \'FAVORITE_THEMES_KEY\'');
+		}
+		console.debug(`Plugins favorite key: ${this.pluginFavoritesKey} Themes favorite key: ${this.themeFavoritesKey}`);
+
+		// In use keys
+		if (process.env.INUSE_PLUGINS_KEY) {
+			this.pluginInUseKey = process.env.INUSE_PLUGINS_KEY;
+		}
+		else {
+			throw Error('Missing environment variable \'INUSE_PLUGINS_KEY\'');
+		}
+		if (process.env.INUSE_THEMES_KEY) {
+			this.themeInUseKey = process.env.INUSE_THEMES_KEY;
+		}
+		else {
+			throw Error('Missing environment variable \'INUSE_THEMES_KEY\'');
+		}
+		console.debug(`Plugins in use key: ${this.pluginInUseKey} Themes in use key: ${this.themeInUseKey}`);
+
+		// Known keys
+		if (process.env.KNOWN_PLUGINS_KEY) {
+			this.pluginKnownKey = process.env.KNOWN_PLUGINS_KEY;
+		}
+		else {
+			throw Error('Missing environment variable \'KNOWN_PLUGINS_KEY\'');
+		}
+		if (process.env.KNOWN_THEMES_KEY) {
+			this.themeKnownKey = process.env.KNOWN_THEMES_KEY;
+		}
+		else {
+			throw Error('Missing environment variable \'KNOWN_THEMES_KEY\'');
+		}
+		console.debug(`Plugins known key: ${this.pluginKnownKey} Themes known key: ${this.themeKnownKey}`);
+
+		// Register for storage key changes
+		this.registerDomEvent(window, 'storage', (event) => {
+			if (event.key === this.pluginFavoritesKey) {
+				console.debug('Plugins favorites key content changed', event);
+				this.onFavoritePluginsChanged(event.newValue);
+			}
+			if (event.key === this.themeFavoritesKey) {
+				console.debug('Themes favorites key content changed', event);
+				this.onFavoriteThemesChanged(event.newValue);
+			}
+			if (event.key === this.pluginInUseKey) {
+				console.debug('Plugins in use key content changed', event);
+				this.onInUsePluginsChanged(event.newValue);
+			}
+			if (event.key === this.themeInUseKey) {
+				console.debug('Themes in use key content changed', event);
+				this.onInUseThemesChanged(event.newValue);
+			}
+			if (event.key === this.pluginKnownKey) {
+				console.debug('Plugins known key content changed', event);
+				this.onKnownPluginsChanged(event.newValue);
+			}
+			if (event.key === this.themeKnownKey) {
+				console.debug('Themes known key content changed', event);
+				this.onKnownThemesChanged(event.newValue);
+			}
+		});
+	}
+
 	onFavoritePluginsChanged(newValue: string | null) {
 		console.debug(`onFavoritePluginsChanged: ${newValue}`);
 		if (newValue) {
@@ -128,94 +184,145 @@ export default class FavoritesPlugin extends Plugin {
 		}
 	}
 
+	onInUsePluginsChanged(newValue: string | null) {
+		console.debug(`onInUsePluginsChanged: ${newValue}`);
+		if (newValue) {
+			this.inUsePlugins = JSON.parse(newValue);
+		}
+		else {
+			this.inUsePlugins = {};
+		}
+	}
+
+	onInUseThemesChanged(newValue: string | null) {
+		console.debug(`onInUseThemesChanged: ${newValue}`);
+		if (newValue) {
+			this.inUseThemes = JSON.parse(newValue);
+		}
+		else {
+			this.inUseThemes = {};
+		}
+	}
+
+	onKnownPluginsChanged(newValue: string | null) {
+		console.debug(`onKnownPluginsChanged: ${newValue}`);
+		if (newValue) {
+			this.knownPlugins = JSON.parse(newValue);
+		}
+		else {
+			this.knownPlugins = [];
+		}
+	}
+
+	onKnownThemesChanged(newValue: string | null) {
+		console.debug(`onKnownThemesChanged: ${newValue}`);
+		if (newValue) {
+			this.knownThemes = JSON.parse(newValue);
+		}
+		else {
+			this.knownThemes = [];
+		}
+	}
+
 	loadFavoritePlugins() {
 		// Load the favorite plugins
-		this.favoritePlugins = JSON.parse(localStorage.getItem(this.pluginsKey) || '[]');
+		this.favoritePlugins = JSON.parse(localStorage.getItem(this.pluginFavoritesKey) || '[]');
 	}
 
 	loadFavoriteThemes() {
 		// Load the favorite plugins
-		this.favoriteThemes = JSON.parse(localStorage.getItem(this.themesKey) || '[]');
+		this.favoriteThemes = JSON.parse(localStorage.getItem(this.themeFavoritesKey) || '[]');
 	}
 
-	loadFavorites() {
+	loadInUsePlugins() {
+		// Load the in use plugins
+		this.inUsePlugins = JSON.parse(localStorage.getItem(this.pluginInUseKey) || '{}');
+	}
+
+	loadInUseThemes() {
+		// Load the in use plugins
+		this.inUseThemes = JSON.parse(localStorage.getItem(this.themeInUseKey) || '{}');
+	}
+
+	loadKnownPlugins() {
+		// Load the known plugins
+		this.knownPlugins = JSON.parse(localStorage.getItem(this.pluginKnownKey) || '[]');
+	}
+
+	loadKnownThemes() {
+		// Load the known plugins
+		this.knownThemes = JSON.parse(localStorage.getItem(this.themeKnownKey) || '[]');
+	}
+
+	loadLists() {
 		this.loadFavoritePlugins();
 		this.loadFavoriteThemes();
+		this.loadInUsePlugins();
+		this.loadInUseThemes();
+		this.loadKnownPlugins();
+		this.loadKnownThemes();
 	}
 
-	saveFavoritesPlugins() {
+	saveFavoritePlugins() {
 		if (this.favoritePlugins.length > 0) {
-			localStorage.setItem(this.pluginsKey, JSON.stringify(this.favoritePlugins));
+			localStorage.setItem(this.pluginFavoritesKey, JSON.stringify(this.favoritePlugins));
 		}
 		else {
-			localStorage.removeItem(this.pluginsKey);
+			localStorage.removeItem(this.pluginFavoritesKey);
 		}
 	}
 
-	saveFavoritesThemes() {
+	saveFavoriteThemes() {
 		if (this.favoriteThemes.length > 0) {
-			localStorage.setItem(this.themesKey, JSON.stringify(this.favoriteThemes));
+			localStorage.setItem(this.themeFavoritesKey, JSON.stringify(this.favoriteThemes));
 		}
 		else {
-			localStorage.removeItem(this.themesKey);
+			localStorage.removeItem(this.themeFavoritesKey);
 		}
 	}
 
-	saveFavorites() {
-		this.saveFavoritesPlugins();
-		this.saveFavoritesThemes();
+	saveInUsePlugins() {
+		if (Object.keys(this.inUsePlugins).length > 0) {
+			localStorage.setItem(this.pluginInUseKey, JSON.stringify(this.inUsePlugins));
+		}
+		else {
+			localStorage.removeItem(this.pluginInUseKey);
+		}
 	}
 
-	async exportFavorites() {
-		if (this.favoritePlugins.length <= 0 && this.favoriteThemes.length <= 0) {
-			new Notice('No favorite lists to backup');
-			return;
+	saveInUseThemes() {
+		if (Object.keys(this.inUseThemes).length > 0) {
+			localStorage.setItem(this.themeInUseKey, JSON.stringify(this.inUseThemes));
 		}
-
-		// Ensure backup path does exist
-		const backupPath = normalizePath(`${this.app.vault.configDir}${PLUGIN_BACKUP_BASE_PATH}`);
-		await this.app.vault.adapter.mkdir(backupPath);
-
-		// Create the file name
-		const pad = (n: number) => n.toString().padStart(2, '0');
-		const date = new Date();
-		const dateString = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}-${pad(date.getHours())}-${pad(date.getMinutes())}`;
-		const backupFilePath = normalizePath(`${backupPath}/favorite-${dateString}.json`);
-
-		// Write backup file for lists
-		await this.app.vault.adapter.write(backupFilePath, JSON.stringify({ plugins: this.favoritePlugins, themes: this.favoriteThemes }));
-		new Notice(`Favorites list backup successful written to: ${backupFilePath}`);
+		else {
+			localStorage.removeItem(this.themeInUseKey);
+		}
 	}
 
-	async importFavorites() {
-		const backupPath = normalizePath(`${this.app.vault.configDir}${PLUGIN_BACKUP_BASE_PATH}`);
-		if (!(await this.app.vault.adapter.exists(backupPath))) {
-			// Backup path does not exist
-			new Notice(`Backup path does not exist: ${backupPath}`);
-			return;
+	saveKnownPlugins() {
+		if (this.knownPlugins.length > 0) {
+			localStorage.setItem(this.pluginKnownKey, JSON.stringify(this.knownPlugins));
 		}
-
-		const backupFiles = (await this.app.vault.adapter.list(backupPath)).files;
-		if (backupFiles.length <= 0) {
-			// Backup path is empty
-			new Notice('Backup path is empty');
-			return;
+		else {
+			localStorage.removeItem(this.pluginKnownKey);
 		}
+	}
 
-		new StringSuggestModal(this.app, 'Select backup file to load from', backupFiles, async (result) => {
-			const content = await this.app.vault.adapter.read(result);
-			const json = JSON.parse(content);
-			const loadedPlugins = json.plugins || [];
-			const loadedThemes = json.themes || [];
-			new DialogModal(this.app, 'Are you sure you want to overwrite current favorite lists?', `The list of favorite plugins will change from ${this.favoritePlugins.length} items to ${loadedPlugins.length} items, and the list of favorite themes will change from ${this.favoriteThemes.length} items to ${loadedThemes.length} items.`, () => {
-				this.favoritePlugins = loadedPlugins;
-				this.favoriteThemes = loadedThemes;
-				this.saveFavorites();
+	saveKnownThemes() {
+		if (this.knownThemes.length > 0) {
+			localStorage.setItem(this.themeKnownKey, JSON.stringify(this.knownThemes));
+		}
+		else {
+			localStorage.removeItem(this.themeKnownKey);
+		}
+	}
 
-				new Notice('Loaded favorites backup successfully');
-			}, () => {
-				new Notice('Canceled loading favorites backup by user');
-			}, 'Overwrite', true, 'Cancel', false).open();
-		}).open();
+	saveLists() {
+		this.saveFavoritePlugins();
+		this.saveFavoriteThemes();
+		this.saveInUsePlugins();
+		this.saveInUseThemes();
+		this.saveKnownPlugins();
+		this.saveKnownThemes();
 	}
 }

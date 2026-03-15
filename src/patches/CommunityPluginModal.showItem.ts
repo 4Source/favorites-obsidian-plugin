@@ -14,16 +14,38 @@ export default (context: CommunityPluginModal, plugin: MyPlugin) => around(conte
 			const infoNameEl = await infoEl?.getElementsByClassName('community-modal-info-name')[0];
 			const buttonContainerEl = await infoEl?.getElementsByClassName('community-modal-button-container')[0];
 
-			// Load the favorite plugins
+			// Load the plugin lists
 			plugin.loadFavoritePlugins();
-			const isFavorite = plugin.favoritePlugins.contains(this.selectedItemId);
+			plugin.loadInUsePlugins();
+			plugin.loadKnownPlugins();
 
 			// Add to the favorite plugins a tag to visualize it for the user
+			const isFavorite = plugin.favoritePlugins.contains(this.selectedItemId);
 			if (isFavorite) {
 				if (infoNameEl) {
 					infoNameEl.createSpan({
 						cls: 'flair',
-						text: 'favorite',
+						text: 'FAVORITE',
+					});
+				}
+			}
+
+			// Add to the in use plugins a tag to visualize it for the user
+			if (Object.keys(plugin.inUsePlugins).contains(this.selectedItemId)) {
+				if (infoNameEl) {
+					infoNameEl.createSpan({
+						cls: 'flair',
+						text: 'IN USE',
+					});
+				}
+			}
+
+			// Add to the known plugins a tag to visualize it for the user
+			if (plugin.knownPlugins.contains(this.selectedItemId)) {
+				if (infoNameEl) {
+					infoNameEl.createSpan({
+						cls: 'flair',
+						text: 'KNOWN',
 					});
 				}
 			}
@@ -36,7 +58,7 @@ export default (context: CommunityPluginModal, plugin: MyPlugin) => around(conte
 					plugin.favoritePlugins.push(this.selectedItemId);
 				}
 
-				plugin.saveFavoritesPlugins();
+				plugin.saveFavoritePlugins();
 
 				// Redraw
 				infoEl.detach();

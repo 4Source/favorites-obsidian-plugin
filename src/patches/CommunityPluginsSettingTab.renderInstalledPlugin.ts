@@ -25,7 +25,7 @@ export default (context: CommunityPluginsSettingTab, plugin: MyPlugin) => around
 					plugin.favoritePlugins.push(selectedPluginID);
 				}
 
-				plugin.saveFavoritesPlugins();
+				plugin.saveFavoritePlugins();
 
 				// Redraw
 				this.render(false);

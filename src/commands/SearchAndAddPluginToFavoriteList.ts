@@ -25,7 +25,7 @@ export default function (plugin: CurrentPlugin): Command {
 
 			new CommunitySuggestModal<CommunityPlugin>(plugin.app, 'Select plugin which should be added to favorites list...', items, (result) => {
 				plugin.favoritePlugins.push(result.id);
-				plugin.saveFavoritesPlugins();
+				plugin.saveFavoritePlugins();
 				new Notice(`Added ${result.name} to favorite list`);
 			}).open();
 		},

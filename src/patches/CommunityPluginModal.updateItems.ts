@@ -8,8 +8,10 @@ export default (context: CommunityPluginModal, plugin: MyPlugin) => around(conte
 		return dedupe(MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, oldMethod, function () {
 			console.debug('Call PluginBrowserModal.updateItems');
 
-			// Load the favorite plugins
+			// Load the plugin lists
 			plugin.loadFavoritePlugins();
+			plugin.loadInUsePlugins();
+			plugin.loadKnownPlugins();
 
 			const result = oldMethod && oldMethod.apply(this);
 
@@ -18,7 +20,27 @@ export default (context: CommunityPluginModal, plugin: MyPlugin) => around(conte
 				if (this.items && this.items[id]?.nameEl) {
 					this.items[id].nameEl.createSpan({
 						cls: 'flair',
-						text: 'favorite',
+						text: 'FAVORITE',
+					});
+				}
+			});
+
+			// Add to the in use plugins a tag to visualize it for the user
+			Object.keys(plugin.inUsePlugins).forEach(id => {
+				if (this.items && this.items[id]?.nameEl) {
+					this.items[id].nameEl.createSpan({
+						cls: 'flair',
+						text: 'IN USE',
+					});
+				}
+			});
+
+			// Add to the known plugins a tag to visualize it for the user
+			plugin.knownPlugins.forEach(id => {
+				if (this.items && this.items[id]?.nameEl) {
+					this.items[id].nameEl.createSpan({
+						cls: 'flair',
+						text: 'KNOWN',
 					});
 				}
 			});
