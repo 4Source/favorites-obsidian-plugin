@@ -6,7 +6,7 @@ import { CommunitySuggestModal } from 'src/modals/CommunitySuggestModal';
 export default function (plugin: CurrentPlugin): Command {
 	return {
 		id: 'search-and-remove-theme-from-favorite-list',
-		name: 'Remove theme from favorite list',
+		name: 'Search and remove theme from favorite list',
 		callback: async () => {
 			plugin.loadFavoriteThemes();
 			if (plugin.favoriteThemes.length <= 0) {

@@ -6,7 +6,7 @@ import { CommunityTheme, fetchCommunityThemeList } from 'src/util/GitHub';
 export default function (plugin: CurrentPlugin): Command {
 	return {
 		id: 'search-and-add-theme-to-favorite-list',
-		name: 'Add theme to favorite list',
+		name: 'Search and add theme to favorite list',
 		callback: async () => {
 			let items = await fetchCommunityThemeList();
 			if (!items) {

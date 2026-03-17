@@ -4,8 +4,8 @@ import { DialogModal } from 'src/modals/DialogModal';
 
 export default function (plugin: CurrentPlugin): Command {
 	return {
-		id: 'clear-theme-favorites-lists',
-		name: 'Clear the theme favorites lists',
+		id: 'clear-theme-favorites-list',
+		name: 'Clear the theme favorites list',
 		callback: () => {
 			plugin.loadFavoriteThemes();
 			const numberClear = plugin.favoriteThemes.length;

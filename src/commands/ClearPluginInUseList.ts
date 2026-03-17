@@ -4,8 +4,8 @@ import { DialogModal } from 'src/modals/DialogModal';
 
 export default function (plugin: CurrentPlugin): Command {
 	return {
-		id: 'clear-plugin-in-use-lists',
-		name: 'Clear the plugin in use lists',
+		id: 'clear-plugin-in-use-list',
+		name: 'Clear the plugin in use list',
 		callback: () => {
 			plugin.loadInUsePlugins();
 			const numberClear = Object.keys(plugin.inUsePlugins).length;

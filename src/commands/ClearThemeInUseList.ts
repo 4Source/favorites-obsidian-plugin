@@ -4,8 +4,8 @@ import { DialogModal } from 'src/modals/DialogModal';
 
 export default function (plugin: CurrentPlugin): Command {
 	return {
-		id: 'clear-theme-in-use-lists',
-		name: 'Clear the theme in use lists',
+		id: 'clear-theme-in-use-list',
+		name: 'Clear the theme in use list',
 		callback: () => {
 			plugin.loadInUseThemes();
 			const numberClear = Object.keys(plugin.inUseThemes).length;

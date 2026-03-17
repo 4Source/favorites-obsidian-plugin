@@ -6,7 +6,7 @@ import { CommunityPlugin, fetchCommunityPluginList } from 'src/util/GitHub';
 export default function (plugin: CurrentPlugin): Command {
 	return {
 		id: 'search-and-add-plugin-to-favorite-list',
-		name: 'Add plugin to favorite list',
+		name: 'Search and add plugin to favorite list',
 		callback: async () => {
 			let items = await fetchCommunityPluginList();
 			if (!items) {

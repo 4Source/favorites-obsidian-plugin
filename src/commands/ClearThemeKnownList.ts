@@ -4,8 +4,8 @@ import { DialogModal } from 'src/modals/DialogModal';
 
 export default function (plugin: CurrentPlugin): Command {
 	return {
-		id: 'clear-theme-known-lists',
-		name: 'Clear the theme known lists',
+		id: 'clear-theme-known-list',
+		name: 'Clear the theme known list',
 		callback: () => {
 			plugin.loadKnownThemes();
 			const numberClear = plugin.knownThemes.length;
