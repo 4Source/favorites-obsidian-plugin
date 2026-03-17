@@ -6,7 +6,7 @@ import { CommunityTheme, fetchCommunityThemeList } from 'src/util/GitHub';
 export default function (plugin: CurrentPlugin): Command {
 	return {
 		id: 'search-and-add-theme-to-favorite-list',
-		name: 'Add theme to favorite list',
+		name: 'Search and add theme to favorite list',
 		callback: async () => {
 			let items = await fetchCommunityThemeList();
 			if (!items) {
@@ -25,7 +25,7 @@ export default function (plugin: CurrentPlugin): Command {
 
 			new CommunitySuggestModal<CommunityTheme>(plugin.app, 'Select theme which should be added to favorites list...', items, (result) => {
 				plugin.favoriteThemes.push(result.name);
-				plugin.saveFavoritesThemes();
+				plugin.saveFavoriteThemes();
 				new Notice(`Added ${result.name} to favorite list`);
 			}).open();
 		},

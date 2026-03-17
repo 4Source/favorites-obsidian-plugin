@@ -3,11 +3,11 @@ import CurrentPlugin from '../main';
 
 export default function (plugin: CurrentPlugin): Command {
 	return {
-		id: 'save-favorites-lists',
-		name: 'Manually save the favorites lists',
+		id: 'save-lists',
+		name: 'Manually save the lists',
 		callback: () => {
-			plugin.saveFavorites();
-			new Notice('Saved favorite lists');
+			plugin.saveLists();
+			new Notice('Saved lists');
 		},
 	};
 }

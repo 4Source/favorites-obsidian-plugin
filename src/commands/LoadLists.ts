@@ -3,11 +3,11 @@ import CurrentPlugin from '../main';
 
 export default function (plugin: CurrentPlugin): Command {
 	return {
-		id: 'load-favorites-lists',
-		name: 'Manually load the favorites lists',
+		id: 'load-lists',
+		name: 'Manually load the lists',
 		callback: () => {
-			plugin.loadFavorites();
-			new Notice('Loaded favorite lists');
+			plugin.loadLists();
+			new Notice('Loaded lists');
 		},
 	};
 }

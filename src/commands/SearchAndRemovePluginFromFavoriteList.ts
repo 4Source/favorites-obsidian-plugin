@@ -6,7 +6,7 @@ import { CommunitySuggestModal } from 'src/modals/CommunitySuggestModal';
 export default function (plugin: CurrentPlugin): Command {
 	return {
 		id: 'search-and-remove-plugin-from-favorite-list',
-		name: 'Remove plugin from favorite list',
+		name: 'Search and remove plugin from favorite list',
 		callback: async () => {
 			plugin.loadFavoritePlugins();
 			if (plugin.favoritePlugins.length <= 0) {
@@ -21,7 +21,7 @@ export default function (plugin: CurrentPlugin): Command {
 
 			new CommunitySuggestModal<CommunityPlugin>(plugin.app, 'Select plugin which should be removed from the favorites list...', items, (result) => {
 				plugin.favoritePlugins.remove(result.id);
-				plugin.saveFavoritesPlugins();
+				plugin.saveFavoritePlugins();
 				new Notice(`Removed ${result.name} from favorite list`);
 			}).open();
 		},

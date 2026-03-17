@@ -40,7 +40,11 @@ const context = await esbuild.context({
 	outfile: "main.js",
 	define: {
 		'process.env.FAVORITE_PLUGINS_KEY': JSON.stringify(prod ? 'favorite-plugins' : 'dev-favorite-plugins'),
-		'process.env.FAVORITE_THEMES_KEY': JSON.stringify(prod ? 'favorite-themes' : 'dev-favorite-themes')
+		'process.env.FAVORITE_THEMES_KEY': JSON.stringify(prod ? 'favorite-themes' : 'dev-favorite-themes'),
+		'process.env.INUSE_PLUGINS_KEY': JSON.stringify(prod ? 'in-use-plugins' : 'dev-in-use-plugins'),
+		'process.env.INUSE_THEMES_KEY': JSON.stringify(prod ? 'in-use-themes' : 'dev-in-use-themes'),
+		'process.env.KNOWN_PLUGINS_KEY': JSON.stringify(prod ? 'known-plugins' : 'dev-known-plugins'),
+		'process.env.KNOWN_THEMES_KEY': JSON.stringify(prod ? 'known-themes' : 'dev-known-themes'),
 	}
 });
 

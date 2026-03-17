@@ -6,7 +6,7 @@ import { CommunityPlugin, fetchCommunityPluginList } from 'src/util/GitHub';
 export default function (plugin: CurrentPlugin): Command {
 	return {
 		id: 'search-and-add-plugin-to-favorite-list',
-		name: 'Add plugin to favorite list',
+		name: 'Search and add plugin to favorite list',
 		callback: async () => {
 			let items = await fetchCommunityPluginList();
 			if (!items) {
@@ -25,7 +25,7 @@ export default function (plugin: CurrentPlugin): Command {
 
 			new CommunitySuggestModal<CommunityPlugin>(plugin.app, 'Select plugin which should be added to favorites list...', items, (result) => {
 				plugin.favoritePlugins.push(result.id);
-				plugin.saveFavoritesPlugins();
+				plugin.saveFavoritePlugins();
 				new Notice(`Added ${result.name} to favorite list`);
 			}).open();
 		},
