@@ -2,6 +2,10 @@ import { around, dedupe } from 'monkey-around';
 import MyPlugin from '../main';
 import { PLUGIN_ID } from 'src/constants';
 import { CommunityItem, CommunityPluginModal } from 'obsidian';
+import FavoriteFlair from 'src/ui-components/FavoriteFlair';
+import InUseFlair from 'src/ui-components/InUseFlair';
+import KnownFlair from 'src/ui-components/KnownFlair';
+import InstalledFlair from 'src/ui-components/InstalledFlair';
 
 const MONKEY_KEY = `${PLUGIN_ID}-CommunityPluginModal-`;
 
@@ -21,35 +25,23 @@ export default (context: CommunityPluginModal, plugin: MyPlugin) => around(conte
 			plugin.loadInUsePlugins();
 			plugin.loadKnownPlugins();
 
-			// Add to the favorite plugins a tag to visualize it for the user
+			// Add aria label to installed flair
+			new InstalledFlair(infoNameEl);
+
+			// Add to the favorite plugins a flair to visualize it for the user
 			const isFavorite = plugin.favoritePlugins.contains(this.selectedItemId);
 			if (isFavorite) {
-				if (infoNameEl) {
-					infoNameEl.createSpan({
-						cls: 'flair',
-						text: 'FAVORITE',
-					});
-				}
+				new FavoriteFlair(infoNameEl);
 			}
 
-			// Add to the in use plugins a tag to visualize it for the user
+			// Add to the in use plugins a flair to visualize it for the user
 			if (Object.keys(plugin.inUsePlugins).contains(this.selectedItemId)) {
-				if (infoNameEl) {
-					infoNameEl.createSpan({
-						cls: 'flair',
-						text: 'IN USE',
-					});
-				}
+				new InUseFlair(infoNameEl);
 			}
 
-			// Add to the known plugins a tag to visualize it for the user
+			// Add to the known plugins a flair to visualize it for the user
 			if (plugin.knownPlugins.contains(this.selectedItemId)) {
-				if (infoNameEl) {
-					infoNameEl.createSpan({
-						cls: 'flair',
-						text: 'KNOWN',
-					});
-				}
+				new KnownFlair(infoNameEl);
 			}
 
 			plugin.registerDomEvent(buttonContainerEl?.createEl('button', { text: isFavorite ? 'Unfavorite' : 'Favorite' }), 'click', async () => {
@@ -82,34 +74,24 @@ export default (context: CommunityPluginModal, plugin: MyPlugin) => around(conte
 
 			const result = oldMethod && oldMethod.apply(this);
 
-			// Add to the favorite plugins a tag to visualize it for the user
+			// Add aria label to installed flair
+			Object.keys(plugin.app.plugins.manifests).forEach(id => {
+				new InstalledFlair(this.items[id]?.nameEl);
+			});
+
+			// Add to the favorite plugins a flair to visualize it for the user
 			plugin.favoritePlugins.forEach(id => {
-				if (this.items && this.items[id]?.nameEl) {
-					this.items[id].nameEl.createSpan({
-						cls: 'flair',
-						text: 'FAVORITE',
-					});
-				}
+				new FavoriteFlair(this.items[id]?.nameEl);
 			});
 
-			// Add to the in use plugins a tag to visualize it for the user
+			// Add to the in use plugins a flair to visualize it for the user
 			Object.keys(plugin.inUsePlugins).forEach(id => {
-				if (this.items && this.items[id]?.nameEl) {
-					this.items[id].nameEl.createSpan({
-						cls: 'flair',
-						text: 'IN USE',
-					});
-				}
+				new InUseFlair(this.items[id]?.nameEl);
 			});
 
-			// Add to the known plugins a tag to visualize it for the user
+			// Add to the known plugins a flair to visualize it for the user
 			plugin.knownPlugins.forEach(id => {
-				if (this.items && this.items[id]?.nameEl) {
-					this.items[id].nameEl.createSpan({
-						cls: 'flair',
-						text: 'KNOWN',
-					});
-				}
+				new KnownFlair(this.items[id]?.nameEl);
 			});
 
 			return result;
