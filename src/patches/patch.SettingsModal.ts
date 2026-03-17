@@ -9,17 +9,17 @@ const MONKEY_KEY = `${PLUGIN_ID}-SettingsModal-`;
 export default (plugin: MyPlugin) => around(plugin.app.setting as SettingsModal, {
 	openTab(oldMethod) {
 		return dedupe(`${MONKEY_KEY}openTab`, oldMethod, function (tab: SettingTab) {
-			console.debug('Call SettingsModal.openTab');
+			// console.debug('Call SettingsModal.openTab');
 
 			if (tab.id === 'community-plugins') {
 				if (!plugin.uninstallCommunityPluginsSettingTabPatch) {
-					console.debug('Patch CommunityPluginsSettingTab');
+					// console.debug('Patch CommunityPluginsSettingTab');
 					plugin.uninstallCommunityPluginsSettingTabPatch = patchCommunityPluginsSettingTab(tab as CommunityPluginsSettingTab, plugin);
 				}
 			}
 
 			if (plugin.uninstallSettingsModalPatch && plugin.uninstallCommunityPluginsSettingTabPatch) {
-				console.debug('Uninstall SettingsModal patch');
+				// console.debug('Uninstall SettingsModal patch');
 				plugin.uninstallSettingsModalPatch();
 				plugin.uninstallSettingsModalPatch = undefined;
 			}

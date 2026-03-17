@@ -8,7 +8,7 @@ const MONKEY_KEY = `${PLUGIN_ID}-CommunityPluginModal-`;
 export default (context: CommunityPluginModal, plugin: MyPlugin) => around(context.constructor.prototype, {
 	showItem(oldMethod) {
 		return dedupe(`${MONKEY_KEY}showItem`, oldMethod, async function (item: CommunityItem) {
-			console.debug('Call CommunityPluginModal.showItem');
+			// console.debug('Call CommunityPluginModal.showItem');
 
 			const result = oldMethod && await oldMethod.apply(this, [item]);
 
@@ -73,7 +73,7 @@ export default (context: CommunityPluginModal, plugin: MyPlugin) => around(conte
 	},
 	updateItems(oldMethod) {
 		return dedupe(`${MONKEY_KEY}updateItems`, oldMethod, function () {
-			console.debug('Call PluginBrowserModal.updateItems');
+			// console.debug('Call PluginBrowserModal.updateItems');
 
 			// Load the plugin lists
 			plugin.loadFavoritePlugins();

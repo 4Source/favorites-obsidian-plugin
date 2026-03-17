@@ -32,25 +32,25 @@ export default class FavoritesPlugin extends Plugin {
 
 		// Patch SettingsModal
 		if (!this.uninstallSettingsModalPatch) {
-			console.debug('Patch SettingsModal');
+			// console.debug('Patch SettingsModal');
 			this.uninstallSettingsModalPatch = patchSettingsModal(this);
 		}
 
 		// Patch Modal
 		if (!this.uninstallModalPatch) {
-			console.debug('Patch Modal');
+			// console.debug('Patch Modal');
 			this.uninstallModalPatch = patchModal(this);
 		}
 
 		// Patch PluginManager
 		if (!this.uninstallPluginManagerPatch) {
-			console.debug('Patch PluginManager');
+			// console.debug('Patch PluginManager');
 			this.uninstallPluginManagerPatch = patchPluginManager(this);
 		}
 
 		// Patch StyleManager
 		if (!this.uninstallStyleManagerPatch) {
-			console.debug('Patch StyleManager');
+			// console.debug('Patch StyleManager');
 			this.uninstallStyleManagerPatch = patchStyleManager(this);
 		}
 
@@ -65,43 +65,43 @@ export default class FavoritesPlugin extends Plugin {
 		try {
 			// Restore the original functions
 			if (this.uninstallCommunityPluginModalPatch) {
-				console.debug('Uninstall CommunityPluginModal patch');
+				// console.debug('Uninstall CommunityPluginModal patch');
 				this.uninstallCommunityPluginModalPatch();
 				this.uninstallCommunityPluginModalPatch = undefined;
 			}
 
 			if (this.uninstallCommunityPluginsSettingTabPatch) {
-				console.debug('Uninstall CommunityPluginsSettingTab patch');
+				// console.debug('Uninstall CommunityPluginsSettingTab patch');
 				this.uninstallCommunityPluginsSettingTabPatch();
 				this.uninstallCommunityPluginsSettingTabPatch = undefined;
 			}
 
 			if (this.uninstallCommunityThemeModalPatch) {
-				console.debug('Uninstall CommunityThemeModal patch');
+				// console.debug('Uninstall CommunityThemeModal patch');
 				this.uninstallCommunityThemeModalPatch();
 				this.uninstallCommunityThemeModalPatch = undefined;
 			}
 
 			if (this.uninstallModalPatch) {
-				console.debug('Uninstall Modal patch');
+				// console.debug('Uninstall Modal patch');
 				this.uninstallModalPatch();
 				this.uninstallModalPatch = undefined;
 			}
 
 			if (this.uninstallPluginManagerPatch) {
-				console.debug('Uninstall PluginManager patch');
+				// console.debug('Uninstall PluginManager patch');
 				this.uninstallPluginManagerPatch();
 				this.uninstallPluginManagerPatch = undefined;
 			}
 
 			if (this.uninstallSettingsModalPatch) {
-				console.debug('Uninstall SettingsModal patch');
+				// console.debug('Uninstall SettingsModal patch');
 				this.uninstallSettingsModalPatch();
 				this.uninstallSettingsModalPatch = undefined;
 			}
 
 			if (this.uninstallStyleManagerPatch) {
-				console.debug('Uninstall StyleManager patch');
+				// console.debug('Uninstall StyleManager patch');
 				this.uninstallStyleManagerPatch();
 				this.uninstallStyleManagerPatch = undefined;
 			}
@@ -126,7 +126,8 @@ export default class FavoritesPlugin extends Plugin {
 		else {
 			throw Error('Missing environment variable \'FAVORITE_THEMES_KEY\'');
 		}
-		console.debug(`Plugins favorite key: ${this.pluginFavoritesKey} Themes favorite key: ${this.themeFavoritesKey}`);
+
+		// console.debug(`Plugins favorite key: ${this.pluginFavoritesKey} Themes favorite key: ${this.themeFavoritesKey}`);
 
 		// In use keys
 		if (process.env.INUSE_PLUGINS_KEY) {
@@ -141,7 +142,8 @@ export default class FavoritesPlugin extends Plugin {
 		else {
 			throw Error('Missing environment variable \'INUSE_THEMES_KEY\'');
 		}
-		console.debug(`Plugins in use key: ${this.pluginInUseKey} Themes in use key: ${this.themeInUseKey}`);
+
+		// console.debug(`Plugins in use key: ${this.pluginInUseKey} Themes in use key: ${this.themeInUseKey}`);
 
 		// Known keys
 		if (process.env.KNOWN_PLUGINS_KEY) {
@@ -156,39 +158,40 @@ export default class FavoritesPlugin extends Plugin {
 		else {
 			throw Error('Missing environment variable \'KNOWN_THEMES_KEY\'');
 		}
-		console.debug(`Plugins known key: ${this.pluginKnownKey} Themes known key: ${this.themeKnownKey}`);
+
+		// console.debug(`Plugins known key: ${this.pluginKnownKey} Themes known key: ${this.themeKnownKey}`);
 
 		// Register for storage key changes
 		this.registerDomEvent(window, 'storage', (event) => {
 			if (event.key === this.pluginFavoritesKey) {
-				console.debug('Plugins favorites key content changed', event);
+				// console.debug('Plugins favorites key content changed', event);
 				this.onFavoritePluginsChanged(event.newValue);
 			}
 			if (event.key === this.themeFavoritesKey) {
-				console.debug('Themes favorites key content changed', event);
+				// console.debug('Themes favorites key content changed', event);
 				this.onFavoriteThemesChanged(event.newValue);
 			}
 			if (event.key === this.pluginInUseKey) {
-				console.debug('Plugins in use key content changed', event);
+				// console.debug('Plugins in use key content changed', event);
 				this.onInUsePluginsChanged(event.newValue);
 			}
 			if (event.key === this.themeInUseKey) {
-				console.debug('Themes in use key content changed', event);
+				// console.debug('Themes in use key content changed', event);
 				this.onInUseThemesChanged(event.newValue);
 			}
 			if (event.key === this.pluginKnownKey) {
-				console.debug('Plugins known key content changed', event);
+				// console.debug('Plugins known key content changed', event);
 				this.onKnownPluginsChanged(event.newValue);
 			}
 			if (event.key === this.themeKnownKey) {
-				console.debug('Themes known key content changed', event);
+				// console.debug('Themes known key content changed', event);
 				this.onKnownThemesChanged(event.newValue);
 			}
 		});
 	}
 
 	onFavoritePluginsChanged(newValue: string | null) {
-		console.debug(`onFavoritePluginsChanged: ${newValue}`);
+		// console.debug(`onFavoritePluginsChanged: ${newValue}`);
 		if (newValue) {
 			this.favoritePlugins = JSON.parse(newValue);
 		}
@@ -198,7 +201,7 @@ export default class FavoritesPlugin extends Plugin {
 	}
 
 	onFavoriteThemesChanged(newValue: string | null) {
-		console.debug(`onFavoriteThemesChanged: ${newValue}`);
+		// console.debug(`onFavoriteThemesChanged: ${newValue}`);
 		if (newValue) {
 			this.favoriteThemes = JSON.parse(newValue);
 		}
@@ -208,7 +211,7 @@ export default class FavoritesPlugin extends Plugin {
 	}
 
 	onInUsePluginsChanged(newValue: string | null) {
-		console.debug(`onInUsePluginsChanged: ${newValue}`);
+		// console.debug(`onInUsePluginsChanged: ${newValue}`);
 		if (newValue) {
 			this.inUsePlugins = JSON.parse(newValue);
 		}
@@ -218,7 +221,7 @@ export default class FavoritesPlugin extends Plugin {
 	}
 
 	onInUseThemesChanged(newValue: string | null) {
-		console.debug(`onInUseThemesChanged: ${newValue}`);
+		// console.debug(`onInUseThemesChanged: ${newValue}`);
 		if (newValue) {
 			this.inUseThemes = JSON.parse(newValue);
 		}
@@ -228,7 +231,7 @@ export default class FavoritesPlugin extends Plugin {
 	}
 
 	onKnownPluginsChanged(newValue: string | null) {
-		console.debug(`onKnownPluginsChanged: ${newValue}`);
+		// console.debug(`onKnownPluginsChanged: ${newValue}`);
 		if (newValue) {
 			this.knownPlugins = JSON.parse(newValue);
 		}
@@ -238,7 +241,7 @@ export default class FavoritesPlugin extends Plugin {
 	}
 
 	onKnownThemesChanged(newValue: string | null) {
-		console.debug(`onKnownThemesChanged: ${newValue}`);
+		// console.debug(`onKnownThemesChanged: ${newValue}`);
 		if (newValue) {
 			this.knownThemes = JSON.parse(newValue);
 		}

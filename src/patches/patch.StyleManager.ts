@@ -8,7 +8,7 @@ const MONKEY_KEY = `${PLUGIN_ID}-StyleManager-installTheme`;
 export default (plugin: MyPlugin) => around(plugin.app.customCss, {
 	installTheme(oldMethod) {
 		return dedupe(`${MONKEY_KEY}installTheme`, oldMethod, async function (manifest: ThemeManifest, version: string) {
-			console.debug('Call StyleManager.installTheme');
+			// console.debug('Call StyleManager.installTheme');
 
 			const result = oldMethod && await oldMethod.apply(this, [manifest, version]);
 
@@ -27,7 +27,7 @@ export default (plugin: MyPlugin) => around(plugin.app.customCss, {
 	},
 	setTheme(oldMethod) {
 		return dedupe(`${MONKEY_KEY}setTheme`, oldMethod, function (name: string) {
-			console.debug('Call StyleManager.setTheme', this);
+			// console.debug('Call StyleManager.setTheme', this);
 
 			const currentVault = plugin.app.appId;
 

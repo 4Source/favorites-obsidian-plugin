@@ -8,7 +8,7 @@ const MONKEY_KEY = `${PLUGIN_ID}-ThemePluginModal-`;
 export default (context: CommunityThemeModal, plugin: MyPlugin) => around(context.constructor.prototype, {
 	showItem(oldMethod) {
 		return dedupe(`${MONKEY_KEY}showItem`, oldMethod, async function (item: CommunityItem) {
-			console.debug('Call CommunityThemeModal.showItem');
+			// console.debug('Call CommunityThemeModal.showItem');
 
 			const result = oldMethod && await oldMethod.apply(this, [item]);
 
@@ -78,7 +78,7 @@ export default (context: CommunityThemeModal, plugin: MyPlugin) => around(contex
 	},
 	updateItems(oldMethod) {
 		return dedupe(`${MONKEY_KEY}updateItems`, oldMethod, function () {
-			console.debug('Call CommunityThemeModal.updateItems');
+			// console.debug('Call CommunityThemeModal.updateItems');
 
 			// Load the theme lists
 			plugin.loadFavoriteThemes();

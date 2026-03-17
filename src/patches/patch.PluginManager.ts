@@ -8,7 +8,7 @@ const MONKEY_KEY = `${PLUGIN_ID}-PluginManager-`;
 export default (plugin: MyPlugin) => around(plugin.app.plugins, {
 	installPlugin(oldMethod) {
 		return dedupe(`${MONKEY_KEY}installPlugin`, oldMethod, async function (repo: string, version: string, manifest: PluginManifest) {
-			console.debug('Call PluginManager.installPlugin');
+			// console.debug('Call PluginManager.installPlugin');
 
 			const result = oldMethod && await oldMethod.apply(this, [repo, version, manifest]);
 
@@ -27,7 +27,7 @@ export default (plugin: MyPlugin) => around(plugin.app.plugins, {
 	},
 	loadPlugin(oldMethod) {
 		return dedupe(`${MONKEY_KEY}loadPlugin`, oldMethod, async function (id: string) {
-			console.debug('Call PluginManager.loadPlugin');
+			// console.debug('Call PluginManager.loadPlugin');
 
 			const currentVault = plugin.app.appId;
 
@@ -49,7 +49,7 @@ export default (plugin: MyPlugin) => around(plugin.app.plugins, {
 	},
 	unloadPlugin(oldMethod) {
 		return dedupe(`${MONKEY_KEY}unloadPlugin`, oldMethod, async function (id: string) {
-			console.debug('Call PluginManager.unloadPlugin');
+			// console.debug('Call PluginManager.unloadPlugin');
 
 			const currentVault = plugin.app.appId;
 
