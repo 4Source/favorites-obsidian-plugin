@@ -2,6 +2,8 @@ import { Plugin } from 'obsidian';
 import { addAllCommands } from './commands';
 import patchSettingsModal from './patches/patch.SettingsModal';
 import patchModal from './patches/patch.Modal';
+import patchPluginManager from './patches/patch.PluginManager';
+import patchStyleManager from './patches/patch.StyleManager';
 
 export default class FavoritesPlugin extends Plugin {
 	pluginFavoritesKey: string;
@@ -20,7 +22,9 @@ export default class FavoritesPlugin extends Plugin {
 	uninstallCommunityPluginsSettingTabPatch?: () => void;
 	uninstallCommunityThemeModalPatch?: () => void;
 	uninstallModalPatch?: () => void;
+	uninstallPluginManagerPatch?: () => void;
 	uninstallSettingsModalPatch?: () => void;
+	uninstallStyleManagerPatch?: () => void;
 
 	async onload() {
 		this.loadStorageKeys();
@@ -38,7 +42,19 @@ export default class FavoritesPlugin extends Plugin {
 			this.uninstallModalPatch = patchModal(this);
 		}
 
-		// TODO: Patch install, uninstall, enable, disable for plugins/themes
+		// Patch PluginManager
+		if (!this.uninstallPluginManagerPatch) {
+			console.debug('Patch PluginManager');
+			this.uninstallPluginManagerPatch = patchPluginManager(this);
+		}
+
+		// Patch StyleManager
+		if (!this.uninstallStyleManagerPatch) {
+			console.debug('Patch StyleManager');
+			this.uninstallStyleManagerPatch = patchStyleManager(this);
+		}
+
+		// TODO: Check for installed/enabled themes and plugins to update the known/in use lists
 
 		// Add all commands registered
 		addAllCommands(this);
@@ -71,10 +87,22 @@ export default class FavoritesPlugin extends Plugin {
 				this.uninstallModalPatch = undefined;
 			}
 
+			if (this.uninstallPluginManagerPatch) {
+				console.debug('Uninstall PluginManager patch');
+				this.uninstallPluginManagerPatch();
+				this.uninstallPluginManagerPatch = undefined;
+			}
+
 			if (this.uninstallSettingsModalPatch) {
 				console.debug('Uninstall SettingsModal patch');
 				this.uninstallSettingsModalPatch();
 				this.uninstallSettingsModalPatch = undefined;
+			}
+
+			if (this.uninstallStyleManagerPatch) {
+				console.debug('Uninstall StyleManager patch');
+				this.uninstallStyleManagerPatch();
+				this.uninstallStyleManagerPatch = undefined;
 			}
 		}
 		catch (e) {
