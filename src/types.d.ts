@@ -88,70 +88,113 @@ declare module 'obsidian' {
 	}
 
 	interface StyleManager extends Component {
+		app: App;
+		styleEl: HTMLStyleElement;
+		extraStyleEls: HTMLStyleElement[];
+		boundRaw: () => unknown;
+		oldThemes: unknown[];
+
+		/**
+		 * Holds the manifest of the installed themes in this vault
+		 *
+		 * @private reverse engineered
+		 */
 		themes: Record<string, ThemeManifest>;
+		updates: Record<string, { themeInfo: unknown, version: string }>;
+		snippets: string[];
+		enabledSnippets: Set<string>;
+		csscache: Map<number, unknown>;
 
-		/*
-		 * onload(): Promise<unknown>;
-		 * loadData(): void;
-		 * readThemes(e): unknown;
-		 * readSnippets(e): unknown;
-		 * onRaw(e): void;
-		 * loadTheme(e: undefined): unknown;
-		 * loadSnippets(): unknown;
-		 * loadCss(path: string): Promise<unknown>;
-		 * setCssEnabledStatus(e, t): void;
+		/**
+		 * Holds the id of the enabled theme
+		 *
+		 * @private reverse engineered
 		 */
+		theme: string;
+		requestLoadTheme: () => unknown;
+		requestLoadSnippets: () => unknown;
+		requestReadThemes: () => unknown;
+		queue: unknown;
+
+		onload(): Promise<unknown>;
+		loadData(): void;
+		readThemes(e: unknown): unknown;
+		readSnippets(e: unknown): unknown;
+		onRaw(e: unknown): void;
+		loadTheme(e: undefined): unknown;
+		loadSnippets(): unknown;
+		loadCss(path: string): Promise<unknown>;
+		setCssEnabledStatus(e: unknown, t: unknown): void;
 		setTheme(name: string): void;
-
-		/*
-		 * setTranslucency(e): void;
-		 * enableTranslucency(): void;
-		 * disableTranslucency(): void;
-		 * getThemeFolder(): string;
-		 * getSnippetsFolder(): string;
-		 * getThemePath(e): string;
-		 * getSnippetPath(e): string;
-		 * removeTheme(e): Promise<unknown>;
-		 * downloadLegacyTheme(e): Promise<unknown>;
-		 * isThemeInstalled(e): unknown;
-		 * hasUpdates(): unknown;
-		 * checkForUpdate(e): Promise<unknown>;
-		 * checkForUpdates(): Promise<unknown>;
-		 * installLegacyTheme(e): Promise<unknown>;
-		 */
+		setTranslucency(e: unknown): void;
+		enableTranslucency(): void;
+		disableTranslucency(): void;
+		getThemeFolder(): string;
+		getSnippetsFolder(): string;
+		getThemePath(e: unknown): string;
+		getSnippetPath(e: unknown): string;
+		removeTheme(e: unknown): Promise<unknown>;
+		downloadLegacyTheme(e: unknown): Promise<unknown>;
+		isThemeInstalled(e: unknown): unknown;
+		hasUpdates(): unknown;
+		checkForUpdate(e: unknown): Promise<unknown>;
+		checkForUpdates(): Promise<unknown>;
+		installLegacyTheme(e: unknown): Promise<unknown>;
 		installTheme(manifest: ThemeManifest, version: string): Promise<unknown>;
-
-		// getManifest(e): Promise<unknown>;
+		getManifest(e: unknown): Promise<unknown>;
 	}
 
 	interface PluginManager {
+
+		/**
+		 * Holds the manifest of the installed plugins in this vault
+		 *
+		 * @private reverse engineered
+		 */
 		manifests: Record<string, PluginManifest>;
 
-		/*
-		 * onRaw(e): void;
-		 * loadManifests(): Promise<unknown>;
-		 * loadManifest(path: string): Promise<unknown>;
+		/**
+		 * Holds references to the loaded plugins identified by there id
+		 *
+		 * @private reverse engineered
 		 */
+		plugins: Record<string, Plugin>;
+
+		/**
+		 * Holds a the ids of the enabled plugins in this vault
+		 *
+		 * @private reverse engineered
+		 */
+		enabledPlugins: Set<string>;
+
+		/**
+		 * Holds the available updates identified by there id with information about the update
+		 *
+		 * @private reverse engineered
+		 */
+		updates: Record<string, { repo: string, version: string, manifest: PluginManifest }>;
+		requestSaveConfig: () => unknown;
+		app: App;
+
+		onRaw(e: unknown): void;
+		loadManifests(): Promise<unknown>;
+		loadManifest(path: string): Promise<unknown>;
 		loadPlugin(id: string): Promise<unknown>;
 		unloadPlugin(id: string): Promise<unknown>;
-
-		/*
-		 * initialize(): Promise<unknown>;
-		 * getPluginFolder(): string;
-		 * enablePlugin(id: string): Promise<unknown>;
-		 * disablePlugin(id: string): Promise<unknown>;
-		 * enablePluginAndSave(id: string): Promise<unknown>;
-		 * disablePluginAndSave(id: string): Promise<unknown>;
-		 * uninstallPlugin(id: string): Promise<unknown>;
-		 * getPlugin(id: string): unknown | null;
-		 * saveConfig(): Promise<unknown>;
-		 * isEnabled(): boolean;
-		 * setEnable(e): Promise<unknown>;
-		 * checkForDeprecations(): Promise<unknown>;
-		 * isDeprecated(e): unknown;
-		 */
+		initialize(): Promise<unknown>;
+		getPluginFolder(): string;
+		enablePlugin(id: string): Promise<unknown>;
+		disablePlugin(id: string): Promise<unknown>;
+		enablePluginAndSave(id: string): Promise<unknown>;
+		disablePluginAndSave(id: string): Promise<unknown>;
+		uninstallPlugin(id: string): Promise<unknown>;
+		getPlugin(id: string): unknown | null;
+		saveConfig(): Promise<unknown>;
+		isEnabled(): boolean;
+		setEnable(e: unknown): Promise<unknown>;
+		checkForDeprecations(): Promise<unknown>;
+		isDeprecated(e: unknown): unknown;
 		installPlugin(repo: string, version: string, manifest: PluginManifest): Promise<unknown>;
-
-		// checkForUpdates(): Promise<unknown>;
+		checkForUpdates(): Promise<unknown>;
 	}
 }

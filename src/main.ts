@@ -54,7 +54,8 @@ export default class FavoritesPlugin extends Plugin {
 			this.uninstallStyleManagerPatch = patchStyleManager(this);
 		}
 
-		// TODO: Check for installed/enabled themes and plugins to update the known/in use lists
+		// Check the state of the vault and update lists
+		this.updateListsForVault();
 
 		// Add all commands registered
 		addAllCommands(this);
@@ -346,5 +347,80 @@ export default class FavoritesPlugin extends Plugin {
 		this.saveInUseThemes();
 		this.saveKnownPlugins();
 		this.saveKnownThemes();
+	}
+
+	updateListsForVault() {
+		const currentVault = this.app.appId;
+
+		// Check the installed plugins and update known plugins list
+		for (const id of Object.keys(this.app.plugins.manifests)) {
+			// Add Plugin to known list if not already
+			if (!this.knownPlugins.contains(id)) {
+				this.knownPlugins.push(id);
+			}
+		}
+
+		// Check the enabled plugins and update in use plugins list
+		for (const id of this.app.plugins.enabledPlugins) {
+			// Add the plugin to the in use list with this vault as user
+			if (!this.inUsePlugins[id] || !Array.isArray(this.inUsePlugins[id])) {
+				this.inUsePlugins[id] = [];
+			}
+			if (!this.inUsePlugins[id].contains(currentVault)) {
+				this.inUsePlugins[id].push(currentVault);
+			}
+		}
+
+		// Check the in use plugins list does not contain old entries of this vault
+		for (const id of Object.keys(this.inUsePlugins)) {
+			if (Array.isArray(this.inUsePlugins[id]) && this.inUsePlugins[id].contains(currentVault)) {
+				if (!this.app.plugins.enabledPlugins.has(id)) {
+					this.inUsePlugins[id].remove(currentVault);
+
+					// Cleanup in use if last vault stops using it
+					if (this.inUsePlugins[id].length <= 0) {
+						delete this.inUsePlugins[id];
+					}
+				}
+			}
+		}
+
+		// Check the installed themes and update known themes list
+		for (const name of Object.keys(this.app.customCss.themes)) {
+			// Add theme to known list if not already
+			if (!this.knownThemes.contains(name)) {
+				this.knownThemes.push(name);
+			}
+		}
+
+		// Check the enabled theme and update in use themes list
+		const name = this.app.customCss.theme;
+
+		// Ignore the default theme
+		if (name !== '') {
+			// Add the theme to the in use list with this vault as user
+			if (!this.inUseThemes[name] || !Array.isArray(this.inUseThemes[name])) {
+				this.inUseThemes[name] = [];
+			}
+			if (!this.inUseThemes[name].contains(currentVault)) {
+				this.inUseThemes[name].push(currentVault);
+			}
+		}
+
+		// Check the in use themes list does not contain old entries of this vault
+		for (const name of Object.keys(this.inUseThemes)) {
+			if (Array.isArray(this.inUseThemes[name]) && this.inUseThemes[name].contains(currentVault)) {
+				if (this.app.customCss.theme !== name) {
+					this.inUseThemes[name].remove(currentVault);
+
+					// Cleanup in use if last vault stops using it
+					if (this.inUseThemes[name].length <= 0) {
+						delete this.inUseThemes[name];
+					}
+				}
+			}
+		}
+
+		this.saveLists();
 	}
 }
