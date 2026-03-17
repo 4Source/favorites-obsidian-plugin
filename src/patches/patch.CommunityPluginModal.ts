@@ -3,11 +3,11 @@ import MyPlugin from '../main';
 import { PLUGIN_ID } from 'src/constants';
 import { CommunityItem, CommunityPluginModal } from 'obsidian';
 
-const MONKEY_KEY = `${PLUGIN_ID}-CommunityPluginModal-showItems`;
+const MONKEY_KEY = `${PLUGIN_ID}-CommunityPluginModal-`;
 
 export default (context: CommunityPluginModal, plugin: MyPlugin) => around(context.constructor.prototype, {
 	showItem(oldMethod) {
-		return dedupe(MONKEY_KEY, oldMethod, async function (item: CommunityItem) {
+		return dedupe(`${MONKEY_KEY}showItem`, oldMethod, async function (item: CommunityItem) {
 			console.debug('Call CommunityPluginModal.showItem');
 
 			const result = oldMethod && await oldMethod.apply(this, [item]);
@@ -66,6 +66,50 @@ export default (context: CommunityPluginModal, plugin: MyPlugin) => around(conte
 				infoEl.detach();
 				await this.showItem(this.items[this.selectedItemId]);
 				this.update();
+			});
+
+			return result;
+		});
+	},
+	updateItems(oldMethod) {
+		return dedupe(`${MONKEY_KEY}updateItems`, oldMethod, function () {
+			console.debug('Call PluginBrowserModal.updateItems');
+
+			// Load the plugin lists
+			plugin.loadFavoritePlugins();
+			plugin.loadInUsePlugins();
+			plugin.loadKnownPlugins();
+
+			const result = oldMethod && oldMethod.apply(this);
+
+			// Add to the favorite plugins a tag to visualize it for the user
+			plugin.favoritePlugins.forEach(id => {
+				if (this.items && this.items[id]?.nameEl) {
+					this.items[id].nameEl.createSpan({
+						cls: 'flair',
+						text: 'FAVORITE',
+					});
+				}
+			});
+
+			// Add to the in use plugins a tag to visualize it for the user
+			Object.keys(plugin.inUsePlugins).forEach(id => {
+				if (this.items && this.items[id]?.nameEl) {
+					this.items[id].nameEl.createSpan({
+						cls: 'flair',
+						text: 'IN USE',
+					});
+				}
+			});
+
+			// Add to the known plugins a tag to visualize it for the user
+			plugin.knownPlugins.forEach(id => {
+				if (this.items && this.items[id]?.nameEl) {
+					this.items[id].nameEl.createSpan({
+						cls: 'flair',
+						text: 'KNOWN',
+					});
+				}
 			});
 
 			return result;

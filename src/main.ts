@@ -1,7 +1,7 @@
 import { Plugin } from 'obsidian';
 import { addAllCommands } from './commands';
-import SettingsModalOpenTab from './patches/SettingsModal.openTab';
-import ModalOpen from './patches/Modal.open';
+import patchSettingsModal from './patches/patch.SettingsModal';
+import patchModal from './patches/patch.Modal';
 
 export default class FavoritesPlugin extends Plugin {
 	pluginFavoritesKey: string;
@@ -16,29 +16,29 @@ export default class FavoritesPlugin extends Plugin {
 	knownPlugins: string[];
 	themeKnownKey: string;
 	knownThemes: string[];
-	uninstallModalOpen?: () => void;
-	uninstallSettingsModalOpenTab?: () => void;
-	uninstallCommunityPluginModalUpdateItems?: () => void;
-	uninstallCommunityPluginModalShowItem?: () => void;
-	uninstallCommunityThemeModalUpdateItems?: () => void;
-	uninstallCommunityThemeModalShowItem?: () => void;
-	uninstallCommunityPluginsSettingTabRenderInstalledPlugin?: () => void;
+	uninstallCommunityPluginModalPatch?: () => void;
+	uninstallCommunityPluginsSettingTabPatch?: () => void;
+	uninstallCommunityThemeModalPatch?: () => void;
+	uninstallModalPatch?: () => void;
+	uninstallSettingsModalPatch?: () => void;
 
 	async onload() {
 		this.loadStorageKeys();
 		this.loadLists();
 
-		// Patch the opening of SettingsModal
-		if (!this.uninstallSettingsModalOpenTab) {
-			console.debug('Patch SettingsModal.openTab');
-			this.uninstallSettingsModalOpenTab = SettingsModalOpenTab(this);
+		// Patch SettingsModal
+		if (!this.uninstallSettingsModalPatch) {
+			console.debug('Patch SettingsModal');
+			this.uninstallSettingsModalPatch = patchSettingsModal(this);
 		}
 
-		// Patch the opening of Modal
-		if (!this.uninstallModalOpen) {
-			console.debug('Patch Modal.open');
-			this.uninstallModalOpen = ModalOpen(this);
+		// Patch Modal
+		if (!this.uninstallModalPatch) {
+			console.debug('Patch Modal');
+			this.uninstallModalPatch = patchModal(this);
 		}
+
+		// TODO: Patch install, uninstall, enable, disable for plugins/themes
 
 		// Add all commands registered
 		addAllCommands(this);
@@ -47,40 +47,34 @@ export default class FavoritesPlugin extends Plugin {
 	async onunload() {
 		try {
 			// Restore the original functions
-			if (this.uninstallModalOpen) {
-				console.debug('Uninstall Modal.open');
-				this.uninstallModalOpen();
-				this.uninstallModalOpen = undefined;
+			if (this.uninstallCommunityPluginModalPatch) {
+				console.debug('Uninstall CommunityPluginModal patch');
+				this.uninstallCommunityPluginModalPatch();
+				this.uninstallCommunityPluginModalPatch = undefined;
 			}
-			if (this.uninstallSettingsModalOpenTab) {
-				console.debug('Uninstall SettingsModal.openTab');
-				this.uninstallSettingsModalOpenTab();
-				this.uninstallSettingsModalOpenTab = undefined;
+
+			if (this.uninstallCommunityPluginsSettingTabPatch) {
+				console.debug('Uninstall CommunityPluginsSettingTab patch');
+				this.uninstallCommunityPluginsSettingTabPatch();
+				this.uninstallCommunityPluginsSettingTabPatch = undefined;
 			}
-			if (this.uninstallCommunityPluginModalUpdateItems) {
-				console.debug('Uninstall CommunityPluginModal.updateItem');
-				this.uninstallCommunityPluginModalUpdateItems();
-				this.uninstallCommunityPluginModalUpdateItems = undefined;
+
+			if (this.uninstallCommunityThemeModalPatch) {
+				console.debug('Uninstall CommunityThemeModal patch');
+				this.uninstallCommunityThemeModalPatch();
+				this.uninstallCommunityThemeModalPatch = undefined;
 			}
-			if (this.uninstallCommunityPluginModalShowItem) {
-				console.debug('Uninstall CommunityPluginModal.showItem');
-				this.uninstallCommunityPluginModalShowItem();
-				this.uninstallCommunityPluginModalShowItem = undefined;
+
+			if (this.uninstallModalPatch) {
+				console.debug('Uninstall Modal patch');
+				this.uninstallModalPatch();
+				this.uninstallModalPatch = undefined;
 			}
-			if (this.uninstallCommunityThemeModalUpdateItems) {
-				console.debug('Uninstall CommunityThemeModal.updateItem');
-				this.uninstallCommunityThemeModalUpdateItems();
-				this.uninstallCommunityThemeModalUpdateItems = undefined;
-			}
-			if (this.uninstallCommunityThemeModalShowItem) {
-				console.debug('Uninstall CommunityThemeModal.showItem');
-				this.uninstallCommunityThemeModalShowItem();
-				this.uninstallCommunityThemeModalShowItem = undefined;
-			}
-			if (this.uninstallCommunityPluginsSettingTabRenderInstalledPlugin) {
-				console.debug('Uninstall CommunityPluginsSettingTab.renderInstalledPlugin');
-				this.uninstallCommunityPluginsSettingTabRenderInstalledPlugin();
-				this.uninstallCommunityPluginsSettingTabRenderInstalledPlugin = undefined;
+
+			if (this.uninstallSettingsModalPatch) {
+				console.debug('Uninstall SettingsModal patch');
+				this.uninstallSettingsModalPatch();
+				this.uninstallSettingsModalPatch = undefined;
 			}
 		}
 		catch (e) {
