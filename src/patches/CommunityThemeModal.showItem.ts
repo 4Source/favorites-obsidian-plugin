@@ -1,11 +1,13 @@
 import { CommunityItem, CommunityThemeModal } from 'obsidian';
 import MyPlugin from '../main';
 import { around, dedupe } from 'monkey-around';
-import { MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS } from 'src/constants';
+import { PLUGIN_ID } from 'src/constants';
+
+const MONKEY_KEY = `${PLUGIN_ID}-ThemePluginModal-showItems`;
 
 export default (context: CommunityThemeModal, plugin: MyPlugin) => around(context.constructor.prototype, {
 	showItem(oldMethod) {
-		return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS, oldMethod, async function (item: CommunityItem) {
+		return dedupe(MONKEY_KEY, oldMethod, async function (item: CommunityItem) {
 			console.debug('Call CommunityThemeModal.showItem');
 
 			const result = oldMethod && await oldMethod.apply(this, [item]);

@@ -1,11 +1,13 @@
 import { around, dedupe } from 'monkey-around';
-import { MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS } from 'src/constants';
+import { PLUGIN_ID } from 'src/constants';
 import MyPlugin from '../main';
 import { CommunityPluginModal } from 'obsidian';
 
+const MONKEY_KEY = `${PLUGIN_ID}-CommunityPluginModal-updateItems`;
+
 export default (context: CommunityPluginModal, plugin: MyPlugin) => around(context.constructor.prototype, {
 	updateItems(oldMethod) {
-		return dedupe(MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS, oldMethod, function () {
+		return dedupe(MONKEY_KEY, oldMethod, function () {
 			console.debug('Call PluginBrowserModal.updateItems');
 
 			// Load the plugin lists

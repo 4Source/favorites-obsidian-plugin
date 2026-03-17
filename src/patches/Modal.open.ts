@@ -5,11 +5,13 @@ import CommunityThemeModalUpdateItems from './CommunityThemeModal.updateItems';
 import CommunityPluginModalShowItem from './CommunityPluginModal.showItem';
 import CommunityPluginModalUpdateItems from './CommunityPluginModal.updateItems';
 import { around, dedupe } from 'monkey-around';
-import { MONKEY_KEY_MODAL_OPEN } from 'src/constants';
+import { PLUGIN_ID } from 'src/constants';
+
+const MONKEY_KEY = `${PLUGIN_ID}-Modal-open`;
 
 export default (plugin: MyPlugin) => around(Modal.prototype, {
 	open(oldMethod) {
-		return dedupe(MONKEY_KEY_MODAL_OPEN, oldMethod, function () {
+		return dedupe(MONKEY_KEY, oldMethod, function () {
 			console.debug('Call Modal.open');
 			const result = oldMethod && oldMethod.apply(this);
 

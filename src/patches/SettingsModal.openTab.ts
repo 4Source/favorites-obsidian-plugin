@@ -1,12 +1,14 @@
 import { CommunityPluginsSettingTab, SettingsModal, SettingTab } from 'obsidian';
 import MyPlugin from '../main';
 import { around, dedupe } from 'monkey-around';
-import { MONKEY_KEY_SETTINGS_MODAL_OPEN_TAB } from 'src/constants';
+import { PLUGIN_ID } from 'src/constants';
 import CommunityPluginsSettingTabRenderInstalledPlugin from './CommunityPluginsSettingTab.renderInstalledPlugin';
+
+const MONKEY_KEY = `${PLUGIN_ID}-SettingsModal-openTab`;
 
 export default (plugin: MyPlugin) => around(plugin.app.setting as SettingsModal, {
 	openTab(oldMethod) {
-		return dedupe(MONKEY_KEY_SETTINGS_MODAL_OPEN_TAB, oldMethod, function (tab: SettingTab) {
+		return dedupe(MONKEY_KEY, oldMethod, function (tab: SettingTab) {
 			console.debug('Call SettingsModal.openTab');
 
 			if (tab.id === 'community-plugins') {

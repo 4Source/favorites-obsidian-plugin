@@ -1,11 +1,13 @@
 import { CommunityItem, CommunityPluginsSettingTab, setIcon, setTooltip } from 'obsidian';
 import MyPlugin from '../main';
 import { around, dedupe } from 'monkey-around';
-import { MONKEY_KEY_COMMUNITY_PLUGIN_SETTINGS_TAB_RENDER_INSTALLED_PLUGIN } from 'src/constants';
+import { PLUGIN_ID } from 'src/constants';
+
+const MONKEY_KEY = `${PLUGIN_ID}-CommunityPluginsSettingTab-renderInstalledPlugin`;
 
 export default (context: CommunityPluginsSettingTab, plugin: MyPlugin) => around(context, {
 	renderInstalledPlugin(oldMethod) {
-		return dedupe(MONKEY_KEY_COMMUNITY_PLUGIN_SETTINGS_TAB_RENDER_INSTALLED_PLUGIN, oldMethod, function (item: CommunityItem, containerEl: HTMLElement, n: unknown, i: unknown, r: unknown) {
+		return dedupe(MONKEY_KEY, oldMethod, function (item: CommunityItem, containerEl: HTMLElement, n: unknown, i: unknown, r: unknown) {
 			console.debug('Call CommunityPluginsSettingTab.renderInstalledPlugin');
 			oldMethod && oldMethod.apply(this, [item, containerEl, n, i, r]);
 

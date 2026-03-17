@@ -1,9 +1,2 @@
 export const PLUGIN_ID = 'favorites';
 export const PLUGIN_BACKUP_BASE_PATH = `/plugins/${PLUGIN_ID}/backup`;
-export const MONKEY_KEY_MODAL_OPEN = `${PLUGIN_ID}-Modal-open`;
-export const MONKEY_KEY_SETTINGS_MODAL_OPEN_TAB = `${PLUGIN_ID}-SettingsModal-openTab`;
-export const MONKEY_KEY_PLUGIN_BROWSER_MODAL_UPDATE_ITEMS = `${PLUGIN_ID}-CommunityPluginModal-updateItems`;
-export const MONKEY_KEY_PLUGIN_BROWSER_MODAL_SHOW_ITEMS = `${PLUGIN_ID}-CommunityPluginModal-showItems`;
-export const MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS = `${PLUGIN_ID}-ThemePluginModal-updateItems`;
-export const MONKEY_KEY_THEME_BROWSER_MODAL_SHOW_ITEMS = `${PLUGIN_ID}-ThemePluginModal-showItems`;
-export const MONKEY_KEY_COMMUNITY_PLUGIN_SETTINGS_TAB_RENDER_INSTALLED_PLUGIN = `${PLUGIN_ID}-CommunityPluginsSettingTab-renderInstalledPlugin`;

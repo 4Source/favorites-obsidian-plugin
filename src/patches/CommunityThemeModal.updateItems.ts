@@ -1,11 +1,13 @@
 import { CommunityThemeModal } from 'obsidian';
 import MyPlugin from '../main';
 import { around, dedupe } from 'monkey-around';
-import { MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS } from 'src/constants';
+import { PLUGIN_ID } from 'src/constants';
+
+const MONKEY_KEY = `${PLUGIN_ID}-ThemePluginModal-updateItems`;
 
 export default (context: CommunityThemeModal, plugin: MyPlugin) => around(context.constructor.prototype, {
 	updateItems(oldMethod) {
-		return dedupe(MONKEY_KEY_THEME_BROWSER_MODAL_UPDATE_ITEMS, oldMethod, function () {
+		return dedupe(MONKEY_KEY, oldMethod, function () {
 			console.debug('Call CommunityThemeModal.updateItems');
 
 			// Load the theme lists
