@@ -42,10 +42,12 @@ export default (context: CommunityPluginsSettingTab, plugin: MyPlugin) => around
 				setTooltip(favEl, 'Favorite');
 			}
 
-			// Add Favorite Icon to plugin control
-			// HOTFIX: Temporary removed to allow users to at least disable the plugin till adapted to new UI
-			// const controlEl: HTMLElement = this.installedPlugins.listEl.lastChild?.getElementsByClassName('setting-item-control')[0];
-			// controlEl.insertBefore(favEl, controlEl.children[0]);
+			/*
+			 * HOTFIX: Temporary removed to allow users to at least disable the plugin till adapted to new UI
+			 * Add Favorite Icon to plugin control
+			 * const controlEl: HTMLElement = this.installedPlugins.listEl.lastChild?.getElementsByClassName('setting-item-control')[0];
+			 * controlEl.insertBefore(favEl, controlEl.children[0]);
+			 */
 		});
 	},
 });
