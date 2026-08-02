@@ -1,3 +1,8 @@
+> [!CAUTION]
+> Since Obsidian updated the settings UI in [v1.13.4](https://obsidian.md/changelog/2026-07-30-desktop-v1.13.4/) this plugin is not expected to work anymore. I am expecting almost the full plugin code to require rework to adopt to the new UI. 
+> 
+> For more information on this see [#24](https://github.com/4Source/favorites-obsidian-plugin/issues/24)
+
 ***Favorites*** lets you manage a global favorites list for both plugins and themes in Obsidian - and keeps it consistent across all your vaults.
 
 Stop re-searching the same plugins or themes in every vault. With one central list, your essential tools and styles are always easy to find. 
